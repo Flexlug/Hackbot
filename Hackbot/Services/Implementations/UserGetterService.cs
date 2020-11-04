@@ -7,12 +7,12 @@ using Telegram.Bot;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 
-namespace Hackbot.Services
+namespace Hackbot.Services.Implementations
 {
     /// <summary>
     /// Позволяет получить информацию о пользователе, зная только его ID
     /// </summary>
-    public class UserGetterService
+    public class UserGetterService : IUserGetterService
     {
         /// <summary>
         /// Клиент, через который бот взаимодействует с Telegram API
@@ -25,7 +25,6 @@ namespace Hackbot.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         public async Task<User> GetUserAsync(long userId) => (await client.GetChatMemberAsync(userId, (int)userId)).User;
-
 
         #region Singleton
 

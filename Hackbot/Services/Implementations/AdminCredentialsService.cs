@@ -11,6 +11,9 @@ using Hackbot.Threading;
 
 namespace Hackbot.Services.Implementations
 {
+    /// <summary>
+    /// Сервис для проверки учётных данных в БД админов
+    /// </summary>
     public class AdminCredentialsService : IAdminCredentialsService
     {
         private AdminCredentialsContext adminDB;

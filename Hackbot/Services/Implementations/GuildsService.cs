@@ -41,7 +41,7 @@ namespace Hackbot.Services.Implementations
             }
         }
 
-        public void RemoveGuild(Guild guild)
+        private void RemoveGuild(Guild guild)
         {
             try
             {
@@ -202,7 +202,7 @@ namespace Hackbot.Services.Implementations
             }
         }
 
-        public Guild GetGuildByMember(long member)
+        private Guild GetGuildByMember(long member)
         {
             try
             {

@@ -11,6 +11,7 @@ using Hackbot.Structures;
 using NLog;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Hackbot.Services;
+using Hackbot.Services.Implementations;
 
 namespace Hackbot
 {

@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hackbot.Structures
 {
@@ -9,6 +10,12 @@ namespace Hackbot.Structures
     /// </summary>
     public class Request
     {
+        /// <summary>
+        /// Primary database key
+        /// </summary>
+        [Key]
+        public ulong P_KEY { get; set; }
+
         /// <summary>
         /// ID человека, от которого поступила заявкуа на вступление
         /// </summary>

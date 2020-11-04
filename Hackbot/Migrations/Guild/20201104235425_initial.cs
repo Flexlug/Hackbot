@@ -2,7 +2,7 @@
 
 namespace Hackbot.Migrations.Guild
 {
-    public partial class initialCreate : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -10,42 +10,45 @@ namespace Hackbot.Migrations.Guild
                 name: "Guilds",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(nullable: false)
+                    P_KEY = table.Column<ulong>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     CaptainId = table.Column<long>(nullable: false),
-                    Name = table.Column<string>(nullable: true)
+                    Name = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    InSearching = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Guilds", x => x.Id);
+                    table.PrimaryKey("PK_Guilds", x => x.P_KEY);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Member",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(nullable: false)
+                    P_KEY = table.Column<ulong>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
                     Role = table.Column<int>(nullable: false),
-                    ChatId = table.Column<long>(nullable: false),
-                    GuildId = table.Column<ulong>(nullable: true)
+                    Id = table.Column<long>(nullable: false),
+                    GuildP_KEY = table.Column<ulong>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Member", x => x.Id);
+                    table.PrimaryKey("PK_Member", x => x.P_KEY);
                     table.ForeignKey(
-                        name: "FK_Member_Guilds_GuildId",
-                        column: x => x.GuildId,
+                        name: "FK_Member_Guilds_GuildP_KEY",
+                        column: x => x.GuildP_KEY,
                         principalTable: "Guilds",
-                        principalColumn: "Id",
+                        principalColumn: "P_KEY",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Member_GuildId",
+                name: "IX_Member_GuildP_KEY",
                 table: "Member",
-                column: "GuildId");
+                column: "GuildP_KEY");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

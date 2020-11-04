@@ -1,30 +1,28 @@
-﻿using System;
+﻿using Hackbot.Structures;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Text;
-
-using Microsoft.EntityFrameworkCore;
-
-using Hackbot.Structures;
 
 namespace Hackbot.Services.DbContexts
 {
     /// <summary>
     /// Контекст базы данных со всеми зарегистрированными командами
     /// </summary>
-    public class GuildContext : DbContext
+    public class RequestsContext : DbContext
     {
         /// <summary>
-        /// Зарегистрированные команды
+        /// Активные заявки
         /// </summary>
-        public DbSet<Guild> Guilds { get; set; }
+        public DbSet<Request> Requests { get; set; }
 
-        public GuildContext()
+        public RequestsContext()
         {
             Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite("Data Source=guilds.db")
+            => options.UseSqlite("Data Source=requests.db")
                       .EnableDetailedErrors();
     }
 }

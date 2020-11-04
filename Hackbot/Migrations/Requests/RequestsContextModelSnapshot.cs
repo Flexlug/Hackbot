@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Hackbot.Migrations
+namespace Hackbot.Migrations.Requests
 {
-    [DbContext(typeof(AdminCredentialsContext))]
-    partial class AdminCredentialsContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(RequestsContext))]
+    partial class RequestsContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -15,18 +15,30 @@ namespace Hackbot.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.9");
 
-            modelBuilder.Entity("Hackbot.Structures.Admin", b =>
+            modelBuilder.Entity("Hackbot.Structures.Request", b =>
                 {
                     b.Property<ulong>("P_KEY")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserId")
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("From")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RequestingRole")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("To")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("P_KEY");
 
-                    b.ToTable("Admins");
+                    b.ToTable("Requests");
                 });
 #pragma warning restore 612, 618
         }

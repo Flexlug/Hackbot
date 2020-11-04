@@ -14,10 +14,10 @@ namespace Hackbot.Structures
         /// Databse primary key
         /// </summary>
         [Key]
-        public ulong Id { get; set; }
+        public ulong P_KEY { get; set; }
 
         /// <summary>
-        /// Номер телефона
+        /// ID пользователя
         /// </summary>
         public int UserId { get; set; }
     }

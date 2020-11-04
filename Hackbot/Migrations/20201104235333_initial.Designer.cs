@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hackbot.Migrations
 {
     [DbContext(typeof(AdminCredentialsContext))]
-    [Migration("20201102020711_userId")]
-    partial class userId
+    [Migration("20201104235333_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -19,14 +19,14 @@ namespace Hackbot.Migrations
 
             modelBuilder.Entity("Hackbot.Structures.Admin", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<ulong>("P_KEY")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("P_KEY");
 
                     b.ToTable("Admins");
                 });

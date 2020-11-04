@@ -12,6 +12,9 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Hackbot.Scenes
 {
+    /// <summary>
+    /// Главное меню, которое должен видеть капитан команды
+    /// </summary>
     public class MainMenuCaptainScene : Scene
     {
         /// <summary>

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+
+using NLog;
+
 using Hackbot.Services;
 using Hackbot.Structures;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using NLog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 

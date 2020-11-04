@@ -15,12 +15,18 @@ namespace Hackbot.Structures
         /// Primary database key
         /// </summary>
         [Key]
-        public ulong Key { get; set; }
+        public ulong P_KEY { get; set; }
 
         /// <summary>
         /// Имя участника, которым он/она представился
         /// </summary>
         public string Name { get; set; }
+
+        // TODO Добавить составление личного краткого резюме для командира в RegisterGuildScene
+        /// <summary>
+        /// Краткое резюме
+        /// </summary>
+        public string Description { get; set; }
 
         /// <summary>
         /// Роль участника в команде

@@ -2,7 +2,7 @@
 
 namespace Hackbot.Migrations
 {
-    public partial class iniMigrate : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -10,13 +10,13 @@ namespace Hackbot.Migrations
                 name: "Admins",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(nullable: false)
+                    P_KEY = table.Column<ulong>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(nullable: true)
+                    UserId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Admins", x => x.Id);
+                    table.PrimaryKey("PK_Admins", x => x.P_KEY);
                 });
         }
 

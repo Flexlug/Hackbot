@@ -14,7 +14,7 @@ namespace Hackbot.Structures
         /// Database primary key
         /// </summary>
         [Key]
-        public ulong Key { get; set; }
+        public ulong P_KEY { get; set; }
 
         /// <summary>
         /// Список участников
@@ -30,6 +30,12 @@ namespace Hackbot.Structures
         /// Название команды
         /// </summary>
         public string Name { get; set; }
+
+        // TODO Добавить составление описания команды в RegisterGuildScene
+        /// <summary>
+        /// Описание (в частности кейсы, которыми они будут заниматься)
+        /// </summary>
+        public string Description { get; set; }
 
         /// <summary>
         /// В поиске новых сокомандников

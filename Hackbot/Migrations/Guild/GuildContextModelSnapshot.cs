@@ -18,31 +18,40 @@ namespace Hackbot.Migrations.Guild
 
             modelBuilder.Entity("Hackbot.Structures.Guild", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<ulong>("P_KEY")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<long>("CaptainId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("InSearching")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("P_KEY");
 
                     b.ToTable("Guilds");
                 });
 
             modelBuilder.Entity("Hackbot.Structures.Member", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<ulong>("P_KEY")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("ChatId")
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong?>("GuildP_KEY")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong?>("GuildId")
+                    b.Property<long>("Id")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -51,9 +60,9 @@ namespace Hackbot.Migrations.Guild
                     b.Property<int>("Role")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("P_KEY");
 
-                    b.HasIndex("GuildId");
+                    b.HasIndex("GuildP_KEY");
 
                     b.ToTable("Member");
                 });
@@ -62,7 +71,7 @@ namespace Hackbot.Migrations.Guild
                 {
                     b.HasOne("Hackbot.Structures.Guild", null)
                         .WithMany("Members")
-                        .HasForeignKey("GuildId");
+                        .HasForeignKey("GuildP_KEY");
                 });
 #pragma warning restore 612, 618
         }

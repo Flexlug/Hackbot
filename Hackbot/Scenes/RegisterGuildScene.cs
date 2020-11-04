@@ -10,11 +10,10 @@ using NLog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-using Hackbot.Structures;
-using Hackbot.Services;
-using Hackbot.Services.Implementations;
 using Hackbot.Util;
-using System.Reflection.Metadata.Ecma335;
+using Hackbot.Services;
+using Hackbot.Structures;
+using Hackbot.Services.Implementations;
 
 namespace Hackbot.Scenes
 {
