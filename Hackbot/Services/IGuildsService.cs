@@ -28,28 +28,41 @@ namespace Hackbot.Services
         /// <summary>
         /// Получить список команд, в которых отсутствует определённая роль
         /// </summary>
-        /// <param name="role"></param>
+        /// <param name="role">Запрашиваемая роль</param>
         /// <returns></returns>
         public Task<List<Guild>> GetGuildsByRequiredRolesAsync(GuildRoles role);
 
         /// <summary>
+        /// Получить список неполных команд
+        /// </summary>
+        /// <returns></returns>
+        public Task<List<Guild>> GetNotFullGuildsAsync();
+
+        /// <summary>
         /// Получить команду по данным о капитане
         /// </summary>
-        /// <param name="captain"></param>
+        /// <param name="captain">ID капитана</param>
         /// <returns></returns>
         public Task<Guild> GetGuildByCaptianAsync(long captain);
 
         /// <summary>
+        /// Получить команду по данным об участнике
+        /// </summary>
+        /// <param name="member">ID участника</param>
+        /// <returns></returns>
+        public Task<Guild> GetGuildByMemberAsync(long member);
+
+        /// <summary>
         /// Проверить, явлется ли пользователь командиром какой-нибудь команды
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="user">ID пользователя</param>
         /// <returns></returns>
         public Task<bool> CheckCaptainAsync(long user);
 
         /// <summary>
         /// Проверить, является ли пользователь участником какой-нибудь команды
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="user">ID пользователя</param>
         /// <returns></returns>
         public Task<bool> CheckMemberAsync(long user);
 

@@ -10,6 +10,7 @@ using Hackbot.Controllers;
 using Hackbot.Structures;
 using NLog;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Hackbot.Services;
 
 namespace Hackbot
 {
@@ -55,6 +56,9 @@ namespace Hackbot
             User self = await botClient.GetMeAsync();
             logger.Info($"Bot started! {self.Id} {self.FirstName}");
 
+            // Инициализация сервиса для получения данных о пользователях
+            UserGetterService.Initialize(botClient);
+
             botClient.OnMessage += BotClient_OnMessage;
             botClient.OnCallbackQuery += BotClient_OnCallbackQuery;
             botClient.StartReceiving();
@@ -70,7 +74,7 @@ namespace Hackbot
             logger.Debug($"Got inline message: data: {e.CallbackQuery.Data}, text: {e.CallbackQuery.Message.Text}");
             await ComputeRecievedMessage(new RecievedMessage()
             {
-                InlineData = e.CallbackQuery.Data,
+                InlineData =  e.CallbackQuery.Data == "dummy_callback" ? string.Empty : e.CallbackQuery.Data,
                 Chat = e.CallbackQuery.Message.Chat,
                 Text = e.CallbackQuery.Message.Text,
                 From = e.CallbackQuery.From

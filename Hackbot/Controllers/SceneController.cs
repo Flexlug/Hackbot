@@ -47,7 +47,8 @@ namespace Hackbot.Controllers
             {
                 { SceneTable.MainMenu, typeof(MainMenuScene) },
                 { SceneTable.MainAdminMenu, typeof(MainMenuAdminScene) },
-                { SceneTable.RegisterGuild, typeof(RegisterGuildScene) }
+                { SceneTable.RegisterGuild, typeof(RegisterGuildScene) },
+                { SceneTable.MainCaptainMenu, typeof(MainMenuCaptainScene) }
             };
 
             guildsService = GuildsService.GetInstance();
@@ -91,11 +92,14 @@ namespace Hackbot.Controllers
         /// </summary>
         /// <param name="sceneName">Название сцены</param>
         /// <returns></returns>
-        private async Task<Scene> GenerateSceneAsync(SceneTable sceneName)
+        private async Task<Scene> GenerateSceneAsync(SceneTable sceneName, params object[] args)
         {
             if (sceneTable.ContainsKey(sceneName))
             {
-                return Activator.CreateInstance(sceneTable[sceneName]) as Scene;
+                if (args.Length != 0)
+                    return Activator.CreateInstance(sceneTable[sceneName], args) as Scene;
+                else
+                    return Activator.CreateInstance(sceneTable[sceneName]) as Scene;
             }
             else
             {
@@ -113,13 +117,13 @@ namespace Hackbot.Controllers
         {
             if (await guildsService.CheckCaptainAsync(chatId))
             {
-                return await GenerateSceneAsync(SceneTable.MainCaptainMenu);
+                return await GenerateSceneAsync(SceneTable.MainCaptainMenu, chatId);
             }
             else
             {
                 if (await guildsService.CheckMemberAsync(chatId))
                 {
-                    return await GenerateSceneAsync(SceneTable.MainMemberMenu);
+                    return await GenerateSceneAsync(SceneTable.MainMemberMenu, chatId);
                 }
                 else
                 {

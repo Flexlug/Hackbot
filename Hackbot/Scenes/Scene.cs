@@ -24,7 +24,7 @@ namespace Hackbot.Scenes
         /// <summary>
         /// Разметка клавиатуры
         /// </summary>
-        protected IReplyMarkup ReplyKeyboard { get; set; }
+        protected InlineKeyboardMarkup ReplyKeyboard { get; set; }
 
         /// <summary>
         /// Проверить наличие запроса на выход в главное меню

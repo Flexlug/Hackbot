@@ -10,6 +10,7 @@ using NLog;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hackbot.Services.Implementations
 {
@@ -32,6 +33,7 @@ namespace Hackbot.Services.Implementations
                     guildsDb.Guilds.Add(guild);
                     transaction.Commit();
                 }
+                guildsDb.SaveChanges();
             }
             catch(Exception e)
             {
@@ -48,6 +50,7 @@ namespace Hackbot.Services.Implementations
                     guildsDb.Guilds.Remove(guild);
                     transaction.Commit();
                 }
+                guildsDb.SaveChanges();
             }
             catch (Exception e)
             {
@@ -61,7 +64,8 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    Guild g = guildsDb.Guilds.FirstOrDefault(x => x.CaptainId == captain);
+                    Guild g = guildsDb.Guilds.Include(x => x.Members)
+                                             .FirstOrDefault(x => x.CaptainId == captain);
                     transaction.Commit();
                     return g;
                 }
@@ -80,7 +84,8 @@ namespace Hackbot.Services.Implementations
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
                     // Ищем команды, в которых отсутствует участник с запрашиваемой ролью
-                    List<Guild> gs = guildsDb.Guilds.Select(x => x)
+                    List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
+                                                    .Select(x => x)
                                                     .Where(x => x.Members.Exists(mem => mem.Role != role))
                                                     .ToList();
                     transaction.Commit();
@@ -100,8 +105,9 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    bool valid = guildsDb.Guilds.SelectMany(x => x.Members)
-                                                .Select(x => x.ChatId)
+                    bool valid = guildsDb.Guilds.Include(x => x.Members)
+                                                .SelectMany(x => x.Members)
+                                                .Select(x => x.Id)
                                                 .Contains(member);
 
                     return valid;
@@ -140,8 +146,9 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    List<long> mems = guildsDb.Guilds.SelectMany(x => x.Members)
-                                                     .Select(x => x.ChatId)
+                    List<long> mems = guildsDb.Guilds.Include(x => x.Members)
+                                                     .SelectMany(x => x.Members)
+                                                     .Select(x => x.Id)
                                                      .ToList();
 
                     return mems;
@@ -173,6 +180,47 @@ namespace Hackbot.Services.Implementations
             }
         }
 
+        private List<Guild> GetNotFullGuilds()
+        {
+            try
+            {
+                using (var transaction = guildsDb.Database.BeginTransaction())
+                {
+                    // Ищем команды, в которых отсутствует участник с запрашиваемой ролью
+                    List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
+                                                    .Select(x => x)
+                                                    .Where(x => x.Members.Count < 5)
+                                                    .ToList();
+                    transaction.Commit();
+                    return gs;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Error in GetNotFullGuilds method.");
+                return null;
+            }
+        }
+
+        public Guild GetGuildByMember(long member)
+        {
+            try
+            {
+                using (var transaction = guildsDb.Database.BeginTransaction())
+                {
+                    Guild g = guildsDb.Guilds.Include(x => x.Members)
+                                             .FirstOrDefault(x => x.Members.Exists(x => x.Id == member));
+                    transaction.Commit();
+                    return g;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Error in GetGuildByMember method. Member: {member}");
+                return null;
+            }
+        }
+
         public async Task<List<Guild>> GetGuildsByRequiredRolesAsync(GuildRoles role) => await queue.QueueTask(() => GetGuildsByRequiredRoles(role));
         public async Task<Guild> GetGuildByCaptianAsync(long captain) => await queue.QueueTask(() => GetGuildByCaptian(captain));
         public async Task AddGuildAsync(Guild guild) => await queue.QueueTask(() => AddGuild(guild));
@@ -181,6 +229,9 @@ namespace Hackbot.Services.Implementations
         public async Task<bool> CheckMemberAsync(long user) => await queue.QueueTask(() => CheckMember(user));
         public async Task<List<long>> GetAllMembersAsync() => await queue.QueueTask(() => GetAllMembers());
         public async Task<List<long>> GetAllCaptainsAsync() => await queue.QueueTask(() => GetAllCaptains());
+        public async Task<List<Guild>> GetNotFullGuildsAsync() => await queue.QueueTask(() => GetNotFullGuilds());
+        public async Task<Guild> GetGuildByMemberAsync(long member) => await queue.QueueTask(() => GetGuildByMember(member));
+
 
         #region Singleton
 

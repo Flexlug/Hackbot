@@ -15,7 +15,7 @@ namespace Hackbot.Structures
         /// Primary database key
         /// </summary>
         [Key]
-        public ulong Id { get; set; }
+        public ulong Key { get; set; }
 
         /// <summary>
         /// Имя участника, которым он/она представился
@@ -30,6 +30,6 @@ namespace Hackbot.Structures
         /// <summary>
         /// ID чата для отправки уведомлений
         /// </summary>
-        public long ChatId { get; set; }
+        public long Id { get; set; }
     }
 }

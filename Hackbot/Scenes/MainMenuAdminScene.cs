@@ -39,15 +39,19 @@ namespace Hackbot.Scenes
                 {
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("Зарегистрировать команду", "")
+                        InlineKeyboardButton.WithCallbackData("Зарегистрировать команду", "register_team")
                     },
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("Поиск команды", "")
+                        InlineKeyboardButton.WithCallbackData("Поиск команды", "search_team")
                     },
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("ADMIN", "")
+                        InlineKeyboardButton.WithCallbackData("ADMIN", "dummy_callback")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("get user", "getuser")
                     }
                 });
         }

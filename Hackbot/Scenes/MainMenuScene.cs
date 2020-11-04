@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-
+using Hackbot.Services;
 using Hackbot.Structures;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using NLog;
@@ -17,11 +17,6 @@ namespace Hackbot.Scenes
     public class MainMenuScene : Scene
     {
         /// <summary>
-        /// Клавиатура для быстрого ответа
-        /// </summary>
-
-
-        /// <summary>
         /// Логгер для данного класса
         /// </summary>
         private Logger logger = LogManager.GetCurrentClassLogger();
@@ -33,11 +28,11 @@ namespace Hackbot.Scenes
                 {
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("Зарегистрировать команду", "")
+                        InlineKeyboardButton.WithCallbackData("Зарегистрировать команду", "register_guild")
                     },
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData("Поиск команды", "")
+                        InlineKeyboardButton.WithCallbackData("Поиск команды", "search_guild")
                     }
                 });
         }
@@ -57,13 +52,19 @@ namespace Hackbot.Scenes
                     if (CheckMenuEscape(ans))
                         return MainMenu();
 
-                    switch (ans.Text)
+                    if (ans.Text == "getmyid")
                     {
-                        case "Зарегистрировать команду":
+                        logger.Debug($"Requested \"getmyid\". Returning id: {ans.Chat.Id}");
+                        return Respond($"Your id: {ans.From.Id}");
+                    }
+
+                    switch (ans.InlineData)
+                    {
+                        case "register_guild":
                             logger.Debug($"Reached case \"зарегистрировать команду\". Reequesting next scene. chatid: {ans.Chat.Id}");
                             return NextScene(SceneTable.RegisterGuild);
 
-                        case "Поиск команды":
+                        case "search_guild":
                             logger.Debug($"Reached case \"поиск команды\". Requesting next scene chatid: {ans.Chat.Id}");
                             return NextScene(SceneTable.SearchGuild);
 

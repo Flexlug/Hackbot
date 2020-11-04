@@ -14,7 +14,7 @@ namespace Hackbot.Structures
         /// Database primary key
         /// </summary>
         [Key]
-        public ulong Id { get; set; }
+        public ulong Key { get; set; }
 
         /// <summary>
         /// Список участников
@@ -30,5 +30,10 @@ namespace Hackbot.Structures
         /// Название команды
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// В поиске новых сокомандников
+        /// </summary>
+        public bool InSearching { get; set; }
     }
 }
