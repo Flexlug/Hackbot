@@ -58,5 +58,10 @@ namespace Hackbot.Structures
         /// Клавиатура для пользователя
         /// </summary>
         public IReplyMarkup KeyboardMarkup { get; set; }
+
+        /// <summary>
+        /// Параметры для инициализации новой сцены
+        /// </summary>
+        public object[] NextSceneParams { get; set; }
     }
 }

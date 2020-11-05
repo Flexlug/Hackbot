@@ -96,7 +96,7 @@ namespace Hackbot.Controllers
         {
             if (sceneTable.ContainsKey(sceneName))
             {
-                if (args.Length != 0)
+                if (args != null && args.Length != 0)
                     return Activator.CreateInstance(sceneTable[sceneName], args) as Scene;
                 else
                     return Activator.CreateInstance(sceneTable[sceneName]) as Scene;
@@ -174,7 +174,7 @@ namespace Hackbot.Controllers
             if (res.SceneNextAction == SceneResult.SceneAction.Next)
             {
                 logger.Info("Requested next scene");
-                currScene = await GenerateSceneAsync(res.NextScene);
+                currScene = await GenerateSceneAsync(res.NextScene, res.NextSceneParams);
                 res = await currScene.GetResult(ans);
             }
 

@@ -35,6 +35,7 @@ namespace Hackbot.Scenes
                     {
                         InlineKeyboardButton.WithCallbackData("Поиск команды", "search_guild")
                     }
+                    // TODO Добавить кнопку для просмтра активных заявок
                 });
         }
 

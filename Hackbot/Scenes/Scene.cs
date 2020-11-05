@@ -45,6 +45,19 @@ namespace Hackbot.Scenes
         };
 
         /// <summary>
+        /// Запросить переход к следующей сцене
+        /// </summary>
+        /// <param name="nextScene">Следующая сцена</param>
+        /// <param name="args">Параметры для следующей сцены</param>
+        /// <returns></returns>
+        protected SceneResult NextScene(SceneTable nextScene, params object[] args) => new SceneResult()
+        {
+            NextScene = nextScene,
+            SceneNextAction = SceneResult.SceneAction.Next,
+            NextSceneParams = args
+        };
+
+        /// <summary>
         /// Ответить на сообщение пользователя, при этом оставаясь в данной сцене
         /// </summary>
         /// <param name="text">Тест с сообщением</param>
