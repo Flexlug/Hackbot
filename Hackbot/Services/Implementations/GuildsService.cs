@@ -65,6 +65,7 @@ namespace Hackbot.Services.Implementations
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
                     Guild g = guildsDb.Guilds.Include(x => x.Members)
+                                             .AsNoTracking()
                                              .FirstOrDefault(x => x.CaptainId == captain);
                     transaction.Commit();
                     return g;
@@ -85,6 +86,7 @@ namespace Hackbot.Services.Implementations
                 {
                     // Ищем команды, в которых отсутствует участник с запрашиваемой ролью
                     List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
+                                                    .AsNoTracking()
                                                     .Select(x => x)
                                                     .Where(x => x.Members.Exists(mem => mem.Role != role))
                                                     .ToList();
@@ -188,6 +190,7 @@ namespace Hackbot.Services.Implementations
                 {
                     // Ищем команды, в которых отсутствует участник с запрашиваемой ролью
                     List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
+                                                    .AsNoTracking()
                                                     .Select(x => x)
                                                     .Where(x => x.Members.Count < 5)
                                                     .ToList();
@@ -209,6 +212,7 @@ namespace Hackbot.Services.Implementations
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
                     Guild g = guildsDb.Guilds.Include(x => x.Members)
+                                             .AsNoTracking()
                                              .FirstOrDefault(x => x.Members.Exists(x => x.Id == member));
                     transaction.Commit();
                     return g;

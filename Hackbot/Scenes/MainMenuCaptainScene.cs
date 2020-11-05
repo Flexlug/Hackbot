@@ -40,6 +40,10 @@ namespace Hackbot.Scenes
                 new[]
                 {
                     InlineKeyboardButton.WithCallbackData("Удалить команду", "delete_guild")
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Управление командой", "edit_guild")
                 }
             });
 
@@ -58,7 +62,7 @@ namespace Hackbot.Scenes
 
                     logger.Debug($"Reached stage 0. chatid: {ans?.Chat.Id}");
                     Stage++;
-                    return Respond($"С возвращением, {captain.Name}!\n\nВы перешли в панель управления командой {CurrentGuild.Name}.");
+                    return Respond($"Главное меню капитана команды {CurrentGuild.Name}.");
 
                 case 1:
                     logger.Debug($"Reached stage 0. chatid: {ans.Chat.Id}");

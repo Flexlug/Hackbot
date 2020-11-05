@@ -31,7 +31,6 @@ namespace Hackbot.Structures
         /// </summary>
         public string Name { get; set; }
 
-        // TODO Добавить составление описания команды в RegisterGuildScene
         /// <summary>
         /// Описание (в частности кейсы, которыми они будут заниматься)
         /// </summary>

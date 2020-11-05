@@ -22,7 +22,6 @@ namespace Hackbot.Structures
         /// </summary>
         public string Name { get; set; }
 
-        // TODO Добавить составление личного краткого резюме для командира в RegisterGuildScene
         /// <summary>
         /// Краткое резюме
         /// </summary>
