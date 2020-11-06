@@ -11,7 +11,7 @@ namespace Hackbot.Util
     public static class Converter
     {
         /// <summary>
-        /// Предпринимает попытку сконвертировать роль из строки к GuildRoles
+        /// Предпринимает попытку сконвертировать роль из строки (в частности из inline data) к GuildRoles
         /// </summary>
         /// <param name="roleName">Строковое представление роли</param>
         /// <returns></returns>
@@ -29,6 +29,8 @@ namespace Hackbot.Util
                     return GuildRoles.Role4;
                 case "role5":
                     return GuildRoles.Role5;
+                case "OtherRole":
+                    return GuildRoles.OtherRole;
 
                 default:
                     return null;
@@ -54,6 +56,8 @@ namespace Hackbot.Util
                     return "Backend разработчик";
                 case GuildRoles.Role5:
                     return "Менеджер";
+                case GuildRoles.OtherRole:
+                    return "Другое";
 
                 default:
                     throw new Exception("Can't recognize guildRole in method GuildRoleToStr.");

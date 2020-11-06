@@ -10,9 +10,19 @@ namespace Hackbot.Scenes
     public enum SceneTable
     {
         /// <summary>
+        /// Меню редактирования команды
+        /// </summary>
+        CaptainGuildEditScene,
+
+        /// <summary>
         /// Главное меню
         /// </summary>
         MainMenu,
+
+        /// <summary>
+        /// Главное меню с функциями администратора
+        /// </summary>
+        MainAdminMenu,
 
         /// <summary>
         /// Главное меню для капитана команды
@@ -25,14 +35,14 @@ namespace Hackbot.Scenes
         MainMemberMenu,
 
         /// <summary>
-        /// Главное меню с функциями администратора
-        /// </summary>
-        MainAdminMenu,
-
-        /// <summary>
         /// Меню регистрации команды
         /// </summary>
         RegisterGuild,
+
+        /// <summary>
+        /// Сцена отображения запросов на вступление в команду
+        /// </summary>
+        RequestsView,
 
         /// <summary>
         /// Меню поиска команды

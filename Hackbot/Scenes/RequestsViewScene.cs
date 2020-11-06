@@ -1,4 +1,5 @@
 ﻿using Hackbot.Structures;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +13,11 @@ namespace Hackbot.Scenes
     /// </summary>
     public class RequestsViewScene : Scene
     {
+        public RequestsViewScene()
+        {
+            Logger = LogManager.GetCurrentClassLogger();
+        }
+
         public override Task<SceneResult> GetResult(RecievedMessage ans)
         {
             throw new NotImplementedException();

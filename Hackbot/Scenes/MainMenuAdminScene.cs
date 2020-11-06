@@ -30,30 +30,16 @@ namespace Hackbot.Scenes
         /// </summary>
         IAdminCredentialsService credentials;
 
+        private string[] keyboardMarkup = new string[] { "Зарегистрировать команду", "register_team",
+                                                         "Поиск команды", "search_team",
+                                                         "ADMIN", "admin",
+                                                         "get user", "getuser" };
+
         public MainMenuAdminScene()
         {
             credentials = AdminCredentialsService.GetInstance();
 
-            ReplyKeyboard = new InlineKeyboardMarkup(
-                new[]
-                {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Зарегистрировать команду", "register_team")
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Поиск команды", "search_team")
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("ADMIN", "dummy_callback")
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("get user", "getuser")
-                    }
-                });
+            Logger = LogManager.GetCurrentClassLogger();
         }
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
@@ -66,7 +52,8 @@ namespace Hackbot.Scenes
             }
 
             logger.Warn($"Login as admin attempt: {ans.From.Id} granted");
-            return Respond("Доступ разрешен");
+            return Respond("Доступ разрешен",
+                           GenerateKeyboard(keyboardMarkup));
         }
     }
 }

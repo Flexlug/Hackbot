@@ -20,99 +20,22 @@ namespace Hackbot.Scenes
     class RegisterGuildScene : Scene
     {
         /// <summary>
-        /// Логгер для данного класса
-        /// </summary>
-        private Logger logger = LogManager.GetCurrentClassLogger();
-
-        /// <summary>
         /// Предоставляет доступ к БД с гильдями
         /// </summary>
         private IGuildsService guilds;
-
-        /// <summary>
-        /// Стаднартная разметка клавиатуры
-        /// </summary>
-        private InlineKeyboardMarkup StandardReplyKeyboard = new InlineKeyboardMarkup(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
-                }
-            });
-
-        private InlineKeyboardMarkup YesNoReplyKeyboard = new InlineKeyboardMarkup(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Да", "yes")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Нет", "no")
-                }
-            });
-
-        private InlineKeyboardMarkup ChooseRoleReplyKeyboard = new InlineKeyboardMarkup(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Backend разработчик", "role1")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Frontend разработчик", "role2"), 
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("ГИС специалист", "role3") 
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Дизайнер", "role4") 
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Менеджер", "role5")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Назад в меню", "mainmenu")
-                }
-            });
 
         public RegisterGuildScene()
         {
             guilds = GuildsService.GetInstance();
 
-            ReplyKeyboard = StandardReplyKeyboard;
+            Logger = LogManager.GetCurrentClassLogger();
         }
 
-        /// <summary>
-        /// Краткое резюме капитана
-        /// </summary>
+        // user input
         private string captainDescrption = string.Empty;
-
-        /// <summary>
-        /// Имя капитана, которое узнаётся в процессе диалога с пользователем
-        /// </summary>
         private string captainName = string.Empty;
-
-        /// <summary>
-        /// Название команды, которое узнаётся в процессе диалога с пользователем
-        /// </summary>
         private string guildName = string.Empty;
-
-        /// <summary>
-        /// Описание команды. Может включать в себя информацию как об участниках, так и о примерном направлении работы. И с какими кейсами они будут работать.
-        /// </summary>
         private string guildDescription = string.Empty;
-
-        /// <summary>
-        /// Роль командира
-        /// </summary>
         private GuildRoles captainRole;
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
@@ -126,145 +49,117 @@ namespace Hackbot.Scenes
                 // Начало регистрации
                 // Ввод имени
                 case 0:
-                    Stage++;
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
-                    return Respond("Запущен процесс регистрации команды. Вам нужно будет заполнить информацию о себе и новой команде.\n\nНачнём с Вас.\nВведите пожалуйста своё имя.");
+                    NextStage();
+                    return Respond("Запущен процесс регистрации команды. Вам нужно будет заполнить информацию о себе и новой команде.\n\nНачнём с Вас.\nВведите пожалуйста своё имя.",
+                                   GetStandardKeyboard());
 
                 // Проверка имени на валидность
                 // Ввод Member.Description
                 case 1:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
-                    if (!string.IsNullOrWhiteSpace(ans.Text.ToLower()))
-                    {
-                        logger.Debug($"Name valid {ans.Text}");
-                        Stage++;
-                        captainName = ans.Text;
-                        return Respond("Опишите в 2-3 предложениях свои основные навыки и чем вы можете быть полезны команде.");
-                    }
-                    else
-                    {
-                        logger.Debug($"Name is null or whitespace. chatid: {ans.Chat.Id}.");
-                        return Respond("Вы ввели пустое имя. Повторите, пожалуйста, ещё раз.");
-                    }
+                    if (CheckEmptyMsgText(ans))
+                        return Respond("Вы ввели пустое имя. Повторите, пожалуйста, ещё раз.",
+                                       GetStandardKeyboard());
+
+                    captainName = ans.Text;
+
+                    NextStage();
+                    return Respond("Опишите в 2-3 предложениях свои основные навыки и чем вы можете быть полезны команде.",
+                                   GetStandardKeyboard());
 
                 // Проверка Member.Description на валидность
                 // Вопрос о правильности введённых данных
                 case 2:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
+                    if (CheckEmptyMsgText(ans))
+                        return Respond("Вы ввели пустое сообщение. Не стесняйтесь написать хоть что-нибудь о себе. В противном же случае просто напишите \"капитан\" =).",
+                                       GetStandardKeyboard());
 
-                    if (string.IsNullOrWhiteSpace(ans.Text.ToLower()))
-                    {
-                        logger.Debug($"Description is null or whitespace. chatid: {ans.Chat.Id}.");
-                        return Respond("Вы ввели пустое сообщение. Не стесняйтесь написать хоть что-нибудь о себе. В противном же случае просто напишите \"капитан\" =).");
-                    }
-
-                    logger.Debug($"Description valid {ans.Text}");
                     captainDescrption = ans.Text;
 
-                    Stage++;
-                    ReplyKeyboard = YesNoReplyKeyboard;
-                    return Respond($"Ваше имя: {captainName}\nВаши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.");
+                    NextStage();
+                    return Respond($"Ваше имя: {captainName}\nВаши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.",
+                                   GetYesNoKeyboard());
 
                 // Yes/No на вопрос о правильности составленного "резюме"
                 // Выбор названия команды
                 case 3:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
-
-                    if (ans.InlineData == "no")
+                    if (CheckNegativeInline(ans))
                     {
-                        logger.Debug($"Inline NO. Returning to stage 1");
-
-                        ReplyKeyboard = StandardReplyKeyboard;
-                        Stage = 1;
-                        return Respond("Процесс ввода ваших данных запущен заново. Введите пожалуйста своё имя.");
+                        ToStage(1);
+                        return Respond("Процесс ввода ваших данных запущен заново. Введите пожалуйста своё имя.",
+                                       GetStandardKeyboard());
                     }
 
-                    if (ans.InlineData != "yes")
-                    {
-                        logger.Debug($"Invalid inline. Retrying...");
-                        ReplyKeyboard = YesNoReplyKeyboard;
-                        return Respond($"Ответ не распознан.\n\nВаше имя: {captainName}\nВаши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.");
-                    }
+                    if (DetectYesNoInvalidInline(ans))
+                        return Respond($"Ответ не распознан.\n\nВаше имя: {captainName}\nВаши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.",
+                                       GetYesNoKeyboard());
 
-                    Stage++;
-                    ReplyKeyboard = StandardReplyKeyboard;
-                    return Respond("Теперь про команду.\n\nВведите название команды.");
+                    NextStage();
+                    return Respond("Теперь про команду.\n\nВведите название команды.",
+                                   GetStandardKeyboard());
 
                 // Проверка названия команды на валидность
                 // Выбор описания команды
                 case 4:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
 
-                    // Проверка на валидность введенного названия команды
-                    if (string.IsNullOrWhiteSpace(ans.Text.ToLower()))
-                    {
-                        logger.Debug($"Name is null or whitespace. chatid: {ans.Chat.Id}.");
-                        return Respond("Вы ввели пустое название команды. Повторите ещё раз.");
-                    }
+                    if (CheckEmptyMsgText(ans))
+                        return Respond("Вы ввели пустое название команды. Повторите ещё раз.",
+                                       GetStandardKeyboard());
 
-                    logger.Debug($"Guild name valid {ans.Text}");
                     guildName = ans.Text;
 
-                    Stage++;
-                    ReplyKeyboard = StandardReplyKeyboard;
-                    return Respond($"Вы ввели название команды: {ans.Text}\nТеперь напишите краткое описание команды, чтобы Вашим будущим сокомандникам было понятно, в каком направлении преимущественно будет вестись работа. Можете указать конкретные кейсы, которым скорее всего будет отдано предпочтение.");
+                    NextStage();
+                    return Respond($"Вы ввели название команды: {ans.Text}\nТеперь напишите краткое описание команды, чтобы Вашим будущим сокомандникам было понятно, в каком направлении преимущественно будет вестись работа. Можете указать конкретные кейсы, которым скорее всего будет отдано предпочтение.",
+                                   GetStandardKeyboard());
 
                 // Проверка описания команды на валидность
                 // Выбор роли
                 case 5:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
 
-                    // Проверка на валидность введенного названия команды
-                    if (string.IsNullOrWhiteSpace(ans.Text.ToLower()))
-                    {
-                        logger.Debug($"Name is null or whitespace. chatid: {ans.Chat.Id}.");
-                        return Respond("Вы ввели пустое описание команды. Повторите ещё раз.");
-                    }
+                    if (CheckEmptyMsgText(ans))
+                        return Respond("Вы ввели пустое описание команды. Повторите ещё раз.",
+                                       GetStandardKeyboard());
 
-                    logger.Debug($"Guild name valid {ans.Text}");
                     guildDescription = ans.Text;
 
-                    Stage++;
-                    ReplyKeyboard = ChooseRoleReplyKeyboard;
-                    return Respond($"Вы ввели описание команды: {ans.Text}\nВыберете пожалуйста, какую роль вы будете выполнять в команде (помимо капитанской).");
+                    NextStage();
+                    return Respond($"Вы ввели описание команды: {ans.Text}\nВыберете пожалуйста, какую роль вы будете выполнять в команде (помимо капитанской).",
+                                   GetRolesKeyboard());
 
                 // Проверка введенной роли на валидность
                 // Подтверждение введённых данных о команде
                 case 6:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
 
                     GuildRoles? role = Converter.FromStrToGuildRole(ans.InlineData);
                     if (role == null)
                     {
-                        logger.Debug($"Converter couldn't convert role. input: {ans.InlineData}");
-                        return Respond("Ошибка при распознавании роли. Повторите, пожалуйста, выбор роли.");
+                        Logger.Debug($"Converter couldn't convert role. input: {ans.InlineData}");
+                        return Respond("Ошибка при распознавании роли. Повторите, пожалуйста, выбор роли.",
+                                       GetRolesKeyboard());
                     }
 
-                    logger.Debug("Role valid");
                     captainRole = (GuildRoles)role;
 
-                    Stage++;
-                    ReplyKeyboard = YesNoReplyKeyboard;
-                    return Respond($"Название команды: {guildName}\nОписание команды: {guildDescription}\nВаша роль: {Converter.GuildRoleToStr(captainRole)}\n\nПодтвердите правильность введённых данных.");
+                    NextStage();
+                    return Respond($"Название команды: {guildName}\nОписание команды: {guildDescription}\nВаша роль: {Converter.GuildRoleToStr(captainRole)}\n\nПодтвердите правильность введённых данных.",
+                                   GetYesNoKeyboard());
 
                 // Подтверждение введённых данных о команде. Создание команды
                 case 7:
-                    logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
+                    Logger.Debug($"Reached stage {Stage}. chatid: {ans.Chat.Id}");
 
-                    if (ans.InlineData == "no")
+                    if (CheckNegativeInline(ans))
                     {
-                        Stage = 3;
-                        ReplyKeyboard = StandardReplyKeyboard;
-                        return Respond("Процесс регистрации команды запущен заново. Введите пожалуйста название команды.");
+                        ToStage(3);
+                        return Respond("Процесс регистрации команды запущен заново.Введите пожалуйста название команды.",
+                                       GetStandardKeyboard());
                     }
 
-                    if (ans.InlineData != "yes")
-                    {
-                        ReplyKeyboard = YesNoReplyKeyboard;
-                        return Respond($"Ответ не распознан.\n\nВаше имя: {captainName}\nНазвание команды: {guildName}\nВаша роль: {Converter.GuildRoleToStr(captainRole)}\n\nПодтвердите правильность введённых данных.");
-                    }
+                    if (DetectYesNoInvalidInline(ans))
+                        return Respond($"Ответ не распознан.\n\nВаше имя: {captainName}\nНазвание команды: {guildName}\nВаша роль: {Converter.GuildRoleToStr(captainRole)}\n\nПодтвердите правильность введённых данных.",
+                                       GetYesNoKeyboard());
 
-                    logger.Debug($"Creating guild");
+
+                    Logger.Debug($"Creating guild");
                     Guild guild = new Guild()
                     {
                         CaptainId = ans.From.Id,
@@ -285,13 +180,14 @@ namespace Hackbot.Scenes
                         },
                     };
 
-                    logger.Debug($"Adding guild to DB.");
+                    Logger.Debug($"Adding guild to DB.");
                     await guilds.AddGuildAsync(guild);
 
                     return MainMenu($"Команда \"{guild.Name}\" успешно создана.");
 
                 default:
-                    return Respond("Ответ не распознан.");
+                    return Respond("Ответ не распознан.",
+                                   GetStandardKeyboard());
             }
         }
     }

@@ -48,7 +48,8 @@ namespace Hackbot.Controllers
                 { SceneTable.MainMenu, typeof(MainMenuScene) },
                 { SceneTable.MainAdminMenu, typeof(MainMenuAdminScene) },
                 { SceneTable.RegisterGuild, typeof(RegisterGuildScene) },
-                { SceneTable.MainCaptainMenu, typeof(MainMenuCaptainScene) }
+                { SceneTable.MainCaptainMenu, typeof(MainMenuCaptainScene) },
+                { SceneTable.SearchGuild, typeof(SearchGuildScene) }
             };
 
             guildsService = GuildsService.GetInstance();
@@ -103,8 +104,8 @@ namespace Hackbot.Controllers
             }
             else
             {
-                logger.Error($"Could not find scene: {sceneName}. Returned default main menu.");
-                return Activator.CreateInstance(sceneTable[SceneTable.MainMenu]) as Scene;
+                logger.Error($"Could not find scene: {sceneName}. Returned to main menu.");
+                return null;
             }
         }
 
@@ -166,7 +167,7 @@ namespace Hackbot.Controllers
             if (res.SceneNextAction == SceneResult.SceneAction.Admin)
             {
                 logger.Warn("Requested administrator panel");
-                currScene = await GenerateSceneAsync(SceneTable.MainAdminMenu);
+                currScene = await GenerateSceneAsync(SceneTable.MainAdminMenu) ?? await GenerateMainMenuAsync(ans.Chat.Id);
                 res = await currScene.GetResult(ans);
             }
 
@@ -174,7 +175,7 @@ namespace Hackbot.Controllers
             if (res.SceneNextAction == SceneResult.SceneAction.Next)
             {
                 logger.Info("Requested next scene");
-                currScene = await GenerateSceneAsync(res.NextScene, res.NextSceneParams);
+                currScene = await GenerateSceneAsync(res.NextScene, res.NextSceneParams) ?? await GenerateMainMenuAsync(ans.Chat.Id);
                 res = await currScene.GetResult(ans);
             }
 

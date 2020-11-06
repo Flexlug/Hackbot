@@ -26,17 +26,27 @@ namespace Hackbot.Services
         public Task RemoveGuildAsync(Guild guild);
 
         /// <summary>
-        /// Получить список команд, в которых отсутствует определённая роль
+        /// Добавить нового участника в команду
         /// </summary>
-        /// <param name="role">Запрашиваемая роль</param>
+        /// <param name="guild">Команда, в которую будет добавлен участник</param>
+        /// <param name="member">Добавляемый пользователь</param>
         /// <returns></returns>
-        public Task<List<Guild>> GetGuildsByRequiredRolesAsync(GuildRoles role);
+        public Task AddMemberToGuildAsync(Guild guild, Member member);
 
         /// <summary>
-        /// Получить список неполных команд
+        /// Удалить действующего участника из команды
         /// </summary>
+        /// <param name="guild">Команда, из которой будет исключен участник</param>
+        /// <param name="member">Участник команды</param>
         /// <returns></returns>
-        public Task<List<Guild>> GetNotFullGuildsAsync();
+        public Task RemoveMemberFromGuildAsync(Guild guild, Member member);
+
+        /// <summary>
+        /// Получить список команд, в которые данный участник ещё не подал заявку
+        /// </summary>
+        /// <param name="role">ID пользователя</param>
+        /// <returns></returns>
+        public Task<List<Guild>> GetAvaliableGuildsAsync(long memberId);
 
         /// <summary>
         /// Получить команду по данным о капитане

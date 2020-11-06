@@ -22,43 +22,29 @@ namespace Hackbot.Scenes
         /// </summary>
         private Logger logger = LogManager.GetCurrentClassLogger();
 
-        public MainMenuScene()
-        {
-            ReplyKeyboard = new InlineKeyboardMarkup(
-                new[]
-                {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Зарегистрировать команду", "register_guild")
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Поиск команды", "search_guild")
-                    }
-                    // TODO Добавить кнопку для просмтра активных заявок
-                });
-        }
+        /// <summary>
+        /// Разметка клавиатуры в главном меню
+        /// </summary>
+        private string[] keyboardMarkup = new string[] { "Зарегистрировать команду", "register_guild",
+                                                         "Поиск команды", "search_guild" };
+
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
         {
             switch (Stage)
             {
                 case 0:
-                    logger.Debug($"Reached stage 0. chatid: {ans?.Chat.Id}");
-                    Stage++;
-                    return Respond("Вы используете бот Hackbot.\n\nДанная разработка поможет вам найти подходящую для Вас команду. Также Вы можете создать свою. Для этого выберете соответствующий пункт.");
+                    NextStage();
+                    return Respond("Вы используете бот Hackbot.\n\nДанная разработка поможет вам найти подходящую для Вас команду. Также Вы можете создать свою. Для этого выберете соответствующий пункт.",
+                                   GenerateKeyboard(keyboardMarkup));
 
                 case 1:
-                    logger.Debug($"Reached stage 0. chatid: {ans.Chat.Id}");
-
                     if (CheckMenuEscape(ans))
                         return MainMenu();
 
                     if (ans.Text == "getmyid")
-                    {
-                        logger.Debug($"Requested \"getmyid\". Returning id: {ans.Chat.Id}");
-                        return Respond($"Your id: {ans.From.Id}");
-                    }
+                        return Respond($"Your id: {ans.From.Id}",
+                                       GenerateKeyboard(keyboardMarkup));
 
                     switch (ans.InlineData)
                     {
@@ -70,18 +56,15 @@ namespace Hackbot.Scenes
                             logger.Debug($"Reached case \"поиск команды\". Requesting next scene chatid: {ans.Chat.Id}");
                             return NextScene(SceneTable.SearchGuild);
 
-                        case "getmyid":
-                            logger.Debug($"Reached case \"getmyid\". Returning id: {ans.Chat.Id}");
-                            return Respond($"Your id: {ans.From.Id}, chatid: {ans.Chat.Id}");
-
                         default:
                             logger.Debug($"Reached default case. chatid: {ans.Chat.Id}");
-                            return Respond("Ответ не распознан.");                    
+                            return Respond("Ответ не распознан.",
+                                           GenerateKeyboard(keyboardMarkup));
                     }
 
                 default:
-                    logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
-                    return Respond("Ответ не распознан. Возврат к главному меню.");
+                    return Respond("Ответ не распознан. Возврат к главному меню.",
+                                   GenerateKeyboard(keyboardMarkup));
             }
         }
     }

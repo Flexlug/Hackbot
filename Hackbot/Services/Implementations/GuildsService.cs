@@ -22,6 +22,8 @@ namespace Hackbot.Services.Implementations
         private GuildContext guildsDb;
         private BackgroundQueue queue;
 
+        private IRequestsService requests;
+
         private Logger logger = LogManager.GetCurrentClassLogger();
 
         private void AddGuild(Guild guild)
@@ -58,6 +60,44 @@ namespace Hackbot.Services.Implementations
             }
         }
 
+        private void AddMemberToGuild(Guild guild, Member member)
+        {
+            try
+            {
+                using (var transaction = guildsDb.Database.BeginTransaction())
+                {
+                    Guild dbGuild = guildsDb.Guilds.First(x => x.CaptainId == guild.CaptainId);
+                    dbGuild.Members.Add(member);
+
+                    transaction.Commit();
+                }
+                guildsDb.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Error in AddMemberToGuild method. Guild: {guild?.Name} {guild?.CaptainId}. Member: {member.Id}");
+            }
+        }
+
+        private void RemoveMemberFromGuild(Guild guild, Member member)
+        {
+            try
+            {
+                using (var transaction = guildsDb.Database.BeginTransaction())
+                {
+                    Guild dbGuild = guildsDb.Guilds.First(x => x.CaptainId == guild.CaptainId);
+                    dbGuild.Members.Remove(member);
+
+                    transaction.Commit();
+                }
+                guildsDb.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Error in AddMemberToGuild method. Guild: {guild?.Name} {guild?.CaptainId}. Member: {member.Id}");
+            }
+        }
+
         private Guild GetGuildByCaptian(long captain)
         {
             try
@@ -78,8 +118,13 @@ namespace Hackbot.Services.Implementations
             }
         }
 
-        private List<Guild> GetGuildsByRequiredRoles(GuildRoles role)
+        private List<Guild> GetAvaliableGuilds(long memberId)
         {
+            List<Request> Rawreqs = requests.GetRequestsByMemberIdAsync(memberId).Result;
+
+            List<long> reqs = Rawreqs?.Select(x => x.To)
+                                      .ToList();
+
             try
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
@@ -88,15 +133,25 @@ namespace Hackbot.Services.Implementations
                     List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
                                                     .AsNoTracking()
                                                     .Select(x => x)
-                                                    .Where(x => x.Members.Exists(mem => mem.Role != role))
+                                                    .Where(x => x.Members.Count < 5)
                                                     .ToList();
+
                     transaction.Commit();
+
+                    if (gs == null)
+                        return null;
+
+                    // Проверяем, есть ли в списке команды, в которые была подана заявка и удаляем таковые из списка
+                    foreach (Guild g in gs)
+                        if (reqs.Contains(g.CaptainId))
+                            gs.Remove(g);
+
                     return gs;
                 }
             }
             catch (Exception e)
             {
-                logger.Error(e, $"Error in GetGuildsByRequiredRoles method. Role: {role}");
+                logger.Error(e, $"Error in GetAvaliableGuilds method. memberId: {memberId}");
                 return null;
             }
         }
@@ -225,7 +280,7 @@ namespace Hackbot.Services.Implementations
             }
         }
 
-        public async Task<List<Guild>> GetGuildsByRequiredRolesAsync(GuildRoles role) => await queue.QueueTask(() => GetGuildsByRequiredRoles(role));
+        public async Task<List<Guild>> GetAvaliableGuildsAsync(long memberId) => await queue.QueueTask(() => GetAvaliableGuilds(memberId));
         public async Task<Guild> GetGuildByCaptianAsync(long captain) => await queue.QueueTask(() => GetGuildByCaptian(captain));
         public async Task AddGuildAsync(Guild guild) => await queue.QueueTask(() => AddGuild(guild));
         public async Task RemoveGuildAsync(Guild guild) => await queue.QueueTask(() => RemoveGuild(guild));
@@ -233,8 +288,9 @@ namespace Hackbot.Services.Implementations
         public async Task<bool> CheckMemberAsync(long user) => await queue.QueueTask(() => CheckMember(user));
         public async Task<List<long>> GetAllMembersAsync() => await queue.QueueTask(() => GetAllMembers());
         public async Task<List<long>> GetAllCaptainsAsync() => await queue.QueueTask(() => GetAllCaptains());
-        public async Task<List<Guild>> GetNotFullGuildsAsync() => await queue.QueueTask(() => GetNotFullGuilds());
         public async Task<Guild> GetGuildByMemberAsync(long member) => await queue.QueueTask(() => GetGuildByMember(member));
+        public async Task AddMemberToGuildAsync(Guild guild, Member member) => await queue.QueueTask(() => AddMemberToGuild(guild, member));
+        public async Task RemoveMemberFromGuildAsync(Guild guild, Member member) => await queue.QueueTask(() => RemoveMemberFromGuild(guild, member));
 
 
         #region Singleton
@@ -243,7 +299,9 @@ namespace Hackbot.Services.Implementations
         private GuildsService()
         {
             guildsDb = new GuildContext();
-            queue = BackgroundQueue.GetInstance();
+            queue = new BackgroundQueue();
+
+            requests = RequestsService.GetInstance();
         }
 
         public static GuildsService GetInstance()

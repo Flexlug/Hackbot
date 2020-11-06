@@ -37,20 +37,5 @@ namespace Hackbot.Threading
                 return task;
             }
         }
-
-        #region Singleton
-
-        private BackgroundQueue() { }
-        private static BackgroundQueue _instance = null;
-
-        public static BackgroundQueue GetInstance()
-        {
-            if (_instance == null)
-                _instance = new BackgroundQueue();
-
-            return _instance;
-        }
-
-        #endregion
     }
 }

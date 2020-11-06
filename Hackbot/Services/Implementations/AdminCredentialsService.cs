@@ -29,7 +29,7 @@ namespace Hackbot.Services.Implementations
         private AdminCredentialsService()
         {
             adminDB = new AdminCredentialsContext();
-            queue = BackgroundQueue.GetInstance();
+            queue = new BackgroundQueue();
         }
 
         public static AdminCredentialsService GetInstance()

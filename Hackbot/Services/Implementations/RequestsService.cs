@@ -1,6 +1,7 @@
 ﻿using Hackbot.Services.DbContexts;
 using Hackbot.Structures;
 using Hackbot.Threading;
+using Microsoft.EntityFrameworkCore;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -82,7 +83,8 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = requestsDb.Database.BeginTransaction())
                 {
-                    List<Request> reqs = requestsDb.Requests.Select(x => x)
+                    List<Request> reqs = requestsDb.Requests.AsNoTracking()
+                                                            .Select(x => x)
                                                             .Where(x => x.To == captainId)
                                                             .ToList();
                     transaction.Commit();
@@ -103,7 +105,8 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = requestsDb.Database.BeginTransaction())
                 {
-                    List<Request> reqs = requestsDb.Requests.Select(x => x)
+                    List<Request> reqs = requestsDb.Requests.AsNoTracking()
+                                                            .Select(x => x)
                                                             .Where(x => x.From == memberId)
                                                             .ToList();
                     transaction.Commit();
@@ -172,7 +175,7 @@ namespace Hackbot.Services.Implementations
         private RequestsService()
         {
             requestsDb = new RequestsContext();
-            queue = BackgroundQueue.GetInstance();
+            queue = new BackgroundQueue();
         }
 
         public static RequestsService GetInstance()

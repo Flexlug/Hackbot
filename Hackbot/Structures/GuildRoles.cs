@@ -13,6 +13,7 @@ namespace Hackbot.Structures
         Role2 = 2,
         Role3 = 4,
         Role4 = 8,
-        Role5 = 16
+        Role5 = 16,
+        OtherRole = 32
     }
 }

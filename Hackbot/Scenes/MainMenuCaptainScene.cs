@@ -18,11 +18,6 @@ namespace Hackbot.Scenes
     public class MainMenuCaptainScene : Scene
     {
         /// <summary>
-        /// Логгер для данного класса
-        /// </summary>
-        private Logger logger = LogManager.GetCurrentClassLogger();
-
-        /// <summary>
         /// Гильдия, капитаном которой является пользователь
         /// </summary>
         private Guild CurrentGuild { get; set; }
@@ -32,24 +27,15 @@ namespace Hackbot.Scenes
         /// </summary>
         private IGuildsService guilds { get; set; }
 
+        private string[] keyboardMarkup = new string[] { "Управление командой", "edit_guild" };
+
         public MainMenuCaptainScene(long captianId)
         {
-            ReplyKeyboard = new InlineKeyboardMarkup(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Удалить команду", "delete_guild")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Управление командой", "edit_guild")
-                }
-            });
-
             guilds = GuildsService.GetInstance();
 
+
             CurrentGuild = guilds.GetGuildByCaptianAsync(captianId).Result;
+            Logger = LogManager.GetCurrentClassLogger();
         }
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
@@ -59,41 +45,37 @@ namespace Hackbot.Scenes
                 case 0:
                     Member captain = CurrentGuild.Members.First(x => x.Id == CurrentGuild.CaptainId);
 
-
-                    logger.Debug($"Reached stage 0. chatid: {ans?.Chat.Id}");
-                    Stage++;
-                    return Respond($"Главное меню капитана команды {CurrentGuild.Name}.");
+                    NextStage();
+                    return Respond($"Главное меню капитана команды {CurrentGuild.Name}.",
+                                   GenerateKeyboard(keyboardMarkup));
 
                 case 1:
-                    logger.Debug($"Reached stage 0. chatid: {ans.Chat.Id}");
 
                     if (CheckMenuEscape(ans))
                         return MainMenu();
 
                     if (ans.Text == "getmyid")
                     {
-                        logger.Debug($"Requested \"getmyid\". Returning id: {ans.Chat.Id}");
-                        return Respond($"Your id: {ans.From.Id}");
+                        Logger.Debug($"Requested \"getmyid\". Returning id: {ans.Chat.Id}");
+                        return Respond($"Your id: {ans.From.Id}",
+                                       GenerateKeyboard(keyboardMarkup));
                     }
 
                     switch (ans.InlineData)
                     {
-                        case "delete_guild":
-                            logger.Debug($"Reached case \"delete_guild\". Reequesting next scene. chatid: {ans.Chat.Id}");
-                            Stage = 2;
-
-                            return Respond($"Вы уверены? Введите название команды, чтобы подтвердить действие.\nНазвание команды: {CurrentGuild.Name}");
+                        case "edit_guild":
+                            return NextScene(SceneTable.CaptainGuildEditScene, CurrentGuild);
 
                         default:
-                            logger.Debug($"Reached default case. chatid: {ans.Chat.Id}");
-                            return Respond("Ответ не распознан.");
+                            return Respond("Ответ не распознан.",
+                                           GenerateKeyboard(keyboardMarkup));
                     }
                 case 2:
                     if (ans.Text == CurrentGuild.Name)
                     {
-                        logger.Debug($"Requested deleting guild {CurrentGuild.Name}. Deleting...");
+                        Logger.Debug($"Requested deleting guild {CurrentGuild.Name}. Deleting...");
                         await guilds.RemoveGuildAsync(CurrentGuild);
-                        logger.Debug($"Guild deleted");
+                        Logger.Debug($"Guild deleted");
 
                         Stage = 1;
 
@@ -102,12 +84,14 @@ namespace Hackbot.Scenes
                     else
                     {
                         Stage = 1;
-                        return Respond("Удаление команды отменено.");
+                        return Respond("Удаление команды отменено.",
+                                       GenerateKeyboard(keyboardMarkup));
                     }
 
                 default:
-                    logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
-                    return Respond("Ответ не распознан. Возврат к главному меню.");
+                    Logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
+                    return Respond("Ответ не распознан. Возврат к главному меню.",
+                                   GenerateKeyboard(keyboardMarkup));
             }
         }
     }

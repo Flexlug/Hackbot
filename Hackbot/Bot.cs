@@ -57,8 +57,9 @@ namespace Hackbot
             User self = await botClient.GetMeAsync();
             logger.Info($"Bot started! {self.Id} {self.FirstName}");
 
-            // Инициализация сервиса для получения данных о пользователях
+            // Инициализация сервисов, требущих ссылку на клиент бота
             UserGetterService.Initialize(botClient);
+            NotifyService.Initialize(botClient);
 
             botClient.OnMessage += BotClient_OnMessage;
             botClient.OnCallbackQuery += BotClient_OnCallbackQuery;
