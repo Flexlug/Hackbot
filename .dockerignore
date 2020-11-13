@@ -21,5 +21,11 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+
+!/bin/Debug/netcoreapp3.1/config.json
+!/bin/Debug/netcoreapp3.1/admins.db
+!/bin/Debug/netcoreapp3.1/guilds.db
+!/bin/Debug/netcoreapp3.1/requests.db
+
 LICENSE
 README.md
