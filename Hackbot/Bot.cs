@@ -3,15 +3,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Hackbot.Controllers;
-using Hackbot.Structures;
-using NLog;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Telegram.Bot.Types.ReplyMarkups;
+
 using Hackbot.Services;
+using Hackbot.Structures;
+using Hackbot.Controllers;
 using Hackbot.Services.Implementations;
+
+using NLog;
 
 namespace Hackbot
 {
@@ -35,6 +39,15 @@ namespace Hackbot
         /// </summary>
         private SceneController sceneController = new SceneController();
 
+        private InlineKeyboardMarkup GetMenuKeyboard() => new InlineKeyboardMarkup(
+        new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
+            }
+        });
+
         private Logger logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
@@ -55,7 +68,7 @@ namespace Hackbot
             botClient = new TelegramBotClient(_token);
 
             User self = await botClient.GetMeAsync();
-            logger.Info($"Bot started! {self.Id} {self.FirstName}");
+            logger.Info($"Bot started! {self.Id}");
 
             // Инициализация сервисов, требущих ссылку на клиент бота
             UserGetterService.Initialize(botClient);
@@ -101,11 +114,12 @@ namespace Hackbot
                         Chat = e.Message.Chat,
                         Text = e.Message.Text,
                         From = e.Message.From,
+                        Contact = e.Message.Contact
                     });
                     break;
 
                 default:
-                    await botClient.SendTextMessageAsync(e.Message.Chat, "Поддерживаются только текстовые сообщения.");
+                    await botClient.SendTextMessageAsync(e.Message.Chat, "Поддерживаются только текстовые сообщения.", replyMarkup: GetMenuKeyboard());
                     break;
             }
         }

@@ -42,6 +42,14 @@ namespace Hackbot.Services
         public Task RemoveMemberFromGuildAsync(Guild guild, Member member);
 
         /// <summary>
+        /// Изменить описание команды
+        /// </summary>
+        /// <param name="guild">Команда</param>
+        /// <param name="description">Новое описание</param>
+        /// <returns></returns>
+        public Task ChangeGuildDescriptionAsync(Guild guild, string description);
+
+        /// <summary>
         /// Получить список команд, в которые данный участник ещё не подал заявку
         /// </summary>
         /// <param name="role">ID пользователя</param>

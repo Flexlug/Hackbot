@@ -9,6 +9,7 @@ using Hackbot.Services;
 using Hackbot.Structures;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Hackbot.Services.Implementations;
 
 namespace Hackbot.Scenes
 {
@@ -42,9 +43,11 @@ namespace Hackbot.Scenes
                     if (CheckMenuEscape(ans))
                         return MainMenu();
 
-                    if (ans.Text == "getmyid")
-                        return Respond($"Your id: {ans.From.Id}",
-                                       GenerateKeyboard(keyboardMarkup));
+                    if (ans.Text == "getmyid") 
+                    {
+                        return Respond($"Your id: {ans.From.Id}, Your phone: {ans.Contact.PhoneNumber}",
+                                       GenerateKeyboard(keyboardMarkup));                     
+                    }
 
                     switch (ans.InlineData)
                     {

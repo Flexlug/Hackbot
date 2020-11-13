@@ -11,6 +11,7 @@ using Hackbot.Structures;
 using NLog;
 using Hackbot.Services;
 using Hackbot.Services.Implementations;
+using NLog.Fluent;
 
 namespace Hackbot.Controllers
 {
@@ -43,13 +44,18 @@ namespace Hackbot.Controllers
         {
             scenes = new Dictionary<long, Scene>();
 
+            SceneControllerNotifyer.GetInstance().OnRemoveUserDialog += SceneController_OnRemoveUserDialog;
+
             sceneTable = new Dictionary<SceneTable, Type>()
             {
                 { SceneTable.MainMenu, typeof(MainMenuScene) },
                 { SceneTable.MainAdminMenu, typeof(MainMenuAdminScene) },
                 { SceneTable.RegisterGuild, typeof(RegisterGuildScene) },
                 { SceneTable.MainCaptainMenu, typeof(MainMenuCaptainScene) },
-                { SceneTable.SearchGuild, typeof(SearchGuildScene) }
+                { SceneTable.MainMemberMenu, typeof(MainMenuMemberScene) },
+                { SceneTable.CaptainGuildEditScene, typeof(CaptainGuildEditScene) },
+                { SceneTable.SearchGuild, typeof(SearchGuildScene) },
+                { SceneTable.CaptainRequestsView, typeof(CaptainRequestsViewScene) }
             };
 
             guildsService = GuildsService.GetInstance();
@@ -62,30 +68,46 @@ namespace Hackbot.Controllers
         }
 
         /// <summary>
+        /// Выполняется при исключении членов команды или при удалении команды. Необходимо для сброса диалога
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private async Task SceneController_OnRemoveUserDialog(long userId)
+        {
+            if (scenes.ContainsKey(userId))
+            {
+                logger.Debug($"Removed scene {userId}");
+                scenes.Remove(userId);
+            }
+
+            logger.Warn($"Requested remove scene {userId}, but no such exists!");
+        }
+
+        /// <summary>
         /// Сгенерировать различные главные меню в зависимости от того, кем является пользователь
         /// </summary>
         /// <returns></returns>
         public async Task ConfigureAsync()
         {
-            List<long> members = await guildsService.GetAllMembersAsync();
-            List<long> captains = await guildsService.GetAllCaptainsAsync();
+        //    List<long> members = await guildsService.GetAllMembersAsync();
+        //    List<long> captains = await guildsService.GetAllCaptainsAsync();
 
-            foreach (var cap in captains)
-                members.Remove(cap);
+        //    foreach (var cap in captains)
+        //        members.Remove(cap);
 
-            logger.Debug("Configuring main menus");
+        //    logger.Debug("Configuring main menus");
 
-            foreach (var mem in members)
-            {
-                logger.Debug($"Member: {mem}");
-                scenes.Add(mem, await GenerateSceneAsync(SceneTable.MainMemberMenu));
-            }
+        //    foreach (var mem in members)
+        //    {
+        //        logger.Debug($"Member: {mem}");
+        //        scenes.Add(mem, await GenerateSceneAsync(SceneTable.MainMemberMenu));
+        //    }
 
-            foreach (var cap in captains)
-            {
-                logger.Debug($"Captain: {cap}");
-                scenes.Add(cap, await GenerateSceneAsync(SceneTable.MainCaptainMenu));
-            }
+        //    foreach (var cap in captains)
+        //    {
+        //        logger.Debug($"Captain: {cap}");
+        //        scenes.Add(cap, await GenerateSceneAsync(SceneTable.MainCaptainMenu));
+        //    }
         }
 
         /// <summary>
@@ -143,7 +165,7 @@ namespace Hackbot.Controllers
             Scene currScene = null;
 
             // создаём новый диалог при отсутствии такового
-            if (!scenes.ContainsKey(ans.Chat.Id))
+            if (!scenes.ContainsKey(ans.Chat.Id) || scenes[ans.Chat.Id] == null)
             {
                 currScene = await GenerateMainMenuAsync(ans.Chat.Id);
 
@@ -184,7 +206,9 @@ namespace Hackbot.Controllers
             {
                 logger.Info("Requested zeroize");
                 currScene = await GenerateMainMenuAsync(ans.Chat.Id);
-                res.KeyboardMarkup = (await currScene.GetResult(null)).KeyboardMarkup;
+
+                SceneResult newRes = await currScene.GetResult(ans);
+                res.KeyboardMarkup = newRes.KeyboardMarkup;
             }
 
             scenes[ans.Chat.Id] = currScene;

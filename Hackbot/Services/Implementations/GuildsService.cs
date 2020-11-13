@@ -49,7 +49,11 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    guildsDb.Guilds.Remove(guild);
+                    Guild deleteingGuild = guildsDb.Guilds.Include(x => x.Members)
+                                                          .FirstOrDefault(x => x.CaptainId == guild.CaptainId);
+                    deleteingGuild.Members.Clear();
+
+                    guildsDb.Guilds.Remove(deleteingGuild);
                     transaction.Commit();
                 }
                 guildsDb.SaveChanges();
@@ -66,7 +70,8 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    Guild dbGuild = guildsDb.Guilds.First(x => x.CaptainId == guild.CaptainId);
+                    Guild dbGuild = guildsDb.Guilds.Include(x => x.Members)
+                                                   .First(x => x.CaptainId == guild.CaptainId);
                     dbGuild.Members.Add(member);
 
                     transaction.Commit();
@@ -85,8 +90,10 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    Guild dbGuild = guildsDb.Guilds.First(x => x.CaptainId == guild.CaptainId);
-                    dbGuild.Members.Remove(member);
+                    Guild dbGuild = guildsDb.Guilds.Include(x => x.Members)
+                                                   .First(x => x.CaptainId == guild.CaptainId);
+                    Member deletingMember = dbGuild.Members.First(x => x.Id == member.Id);
+                    dbGuild.Members.Remove(deletingMember);
 
                     transaction.Commit();
                 }
@@ -95,6 +102,25 @@ namespace Hackbot.Services.Implementations
             catch (Exception e)
             {
                 logger.Error(e, $"Error in AddMemberToGuild method. Guild: {guild?.Name} {guild?.CaptainId}. Member: {member.Id}");
+            }
+        }
+
+        private void ChangeGuildDescription(Guild guild, string description)
+        {
+            try
+            {
+                using (var transaction = guildsDb.Database.BeginTransaction())
+                {
+                    Guild g = guildsDb.Guilds.FirstOrDefault(x => x.CaptainId == guild.CaptainId);
+                    g.Description = description;
+
+                    transaction.Commit();
+                }
+                guildsDb.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Error in ChangeGuildDescription method. GuildId: {guild.CaptainId}. Description: {description}");
             }
         }
 
@@ -266,9 +292,12 @@ namespace Hackbot.Services.Implementations
             {
                 using (var transaction = guildsDb.Database.BeginTransaction())
                 {
-                    Guild g = guildsDb.Guilds.Include(x => x.Members)
-                                             .AsNoTracking()
-                                             .FirstOrDefault(x => x.Members.Exists(x => x.Id == member));
+                    List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
+                                                    .AsNoTracking()
+                                                    .Select(x => x)
+                                                    .ToList();
+                                             
+                    Guild g = gs.FirstOrDefault(x => x.Members.Exists(x => x.Id == member));
                     transaction.Commit();
                     return g;
                 }
@@ -291,6 +320,7 @@ namespace Hackbot.Services.Implementations
         public async Task<Guild> GetGuildByMemberAsync(long member) => await queue.QueueTask(() => GetGuildByMember(member));
         public async Task AddMemberToGuildAsync(Guild guild, Member member) => await queue.QueueTask(() => AddMemberToGuild(guild, member));
         public async Task RemoveMemberFromGuildAsync(Guild guild, Member member) => await queue.QueueTask(() => RemoveMemberFromGuild(guild, member));
+        public async Task ChangeGuildDescriptionAsync(Guild guild, string description) => await queue.QueueTask(() => ChangeGuildDescription(guild, description));
 
 
         #region Singleton

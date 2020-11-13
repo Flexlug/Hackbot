@@ -118,6 +118,26 @@ namespace Hackbot.Scenes
         #region Keyboards
 
         /// <summary>
+        /// Генерирует клавиатуру с порядковыми числами и выходом в главное меню
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        protected string[] GetNumericMarkup(int count)
+        {
+            string[] strs = new string[(count + 1) * 2];
+            for (int i = 0, ii = 1; i < count * 2; i += 2, ii++)
+            {
+                strs[i] = ii.ToString();         // Название кнопки
+                strs[i + 1] = ii.ToString();     // Inline data
+            }
+
+            strs[strs.Length - 2] = "Меню";
+            strs[strs.Length - 1] = "guildmenu";
+
+            return strs;
+        }
+
+        /// <summary>
         /// Вернуть стандартную разметку клавиатуры, которая включает в себя только кнопку для перехода в главное меню
         /// </summary>
         /// <returns></returns>
@@ -127,6 +147,19 @@ namespace Hackbot.Scenes
                 new[]
                 {
                     InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
+                }
+            });
+
+        /// <summary>
+        /// Вернуть стандартную разметку клавиатуры, которая включает в себя только кнопку для перехода в меню
+        /// </summary>
+        /// <returns></returns>
+        protected InlineKeyboardMarkup GetStandardKeyboard(string customMenu) => new InlineKeyboardMarkup(
+            new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Меню", customMenu)
                 }
             });
 
@@ -148,6 +181,28 @@ namespace Hackbot.Scenes
                 new[]
                 {
                     InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
+                }
+            });
+
+        /// <summary>
+        /// Вернуть клавиатуру с кнопками "да/нет"
+        /// </summary>
+        /// <param name="customMenu">Inlinde Data для кастомной клавиатуры</param>
+        /// <returns></returns>
+        protected InlineKeyboardMarkup GetYesNoKeyboard(string customMenu) => new InlineKeyboardMarkup(
+            new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Да", "yes")
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Нет", "no")
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Меню", customMenu)
                 }
             });
 
@@ -212,7 +267,7 @@ namespace Hackbot.Scenes
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        protected bool CheckMenuEscape(RecievedMessage msg) => msg.InlineData == "mainmenu";
+        protected bool CheckMenuEscape(RecievedMessage msg) => msg?.InlineData == "mainmenu";
 
         /// <summary>
         /// Проверить сообщение на пустоту

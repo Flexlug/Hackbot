@@ -44,6 +44,9 @@ namespace Hackbot.Scenes
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
         {
+            if (CheckMenuEscape(ans))
+                return MainMenu();
+
             // проверим наличие id пользователя в БД админов
             if (!await credentials.CheckAsync(ans.From.Id))
             {

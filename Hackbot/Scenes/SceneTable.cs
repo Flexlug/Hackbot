@@ -40,9 +40,9 @@ namespace Hackbot.Scenes
         RegisterGuild,
 
         /// <summary>
-        /// Сцена отображения запросов на вступление в команду
+        /// Сцена отображения запросов на вступление в команду (для командиров)
         /// </summary>
-        RequestsView,
+        CaptainRequestsView,
 
         /// <summary>
         /// Меню поиска команды

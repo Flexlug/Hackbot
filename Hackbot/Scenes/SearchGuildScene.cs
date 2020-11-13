@@ -119,7 +119,7 @@ namespace Hackbot.Scenes
                         return Respond("Вы ввели пустое описание. Повторите, пожалуйста, ещё раз.",
                                        GetStandardKeyboard());
 
-                    memberName = ans.Text;
+                    memberDescription = ans.Text;
 
                     NextStage();
                     return Respond("Выберете роль, на которую вы претендуете.",
@@ -152,17 +152,22 @@ namespace Hackbot.Scenes
                     switch(ans.InlineData)
                     {
                         case "prev_guild":
+                            if (guildIter == 0)
+                                return Respond($"Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                                               GenerateKeyboard(guildNavKeyboardMarkup));
+
+                            guildIter--;
+                            return Respond($"Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                                           GenerateKeyboard(guildNavKeyboardMarkup));
+
+                        case "next_guild":
                             if (guildIter == avaliableGuilds.Count - 1)
                                 return Respond($"Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                                GenerateKeyboard(guildNavKeyboardMarkup));
 
-                            break;
-
-                        case "next_guild":
-                            if (guildIter == 0)
-                                return Respond($"Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
-                                               GenerateKeyboard(guildNavKeyboardMarkup));
-                            break;
+                            guildIter++;
+                            return Respond($"Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                                           GenerateKeyboard(guildNavKeyboardMarkup));
 
                         case "request":
                             Request req = new Request()

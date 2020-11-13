@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Hackbot": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

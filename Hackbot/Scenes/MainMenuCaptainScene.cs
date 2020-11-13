@@ -70,23 +70,6 @@ namespace Hackbot.Scenes
                             return Respond("Ответ не распознан.",
                                            GenerateKeyboard(keyboardMarkup));
                     }
-                case 2:
-                    if (ans.Text == CurrentGuild.Name)
-                    {
-                        Logger.Debug($"Requested deleting guild {CurrentGuild.Name}. Deleting...");
-                        await guilds.RemoveGuildAsync(CurrentGuild);
-                        Logger.Debug($"Guild deleted");
-
-                        Stage = 1;
-
-                        return MainMenu("Команда удалена.");
-                    }
-                    else
-                    {
-                        Stage = 1;
-                        return Respond("Удаление команды отменено.",
-                                       GenerateKeyboard(keyboardMarkup));
-                    }
 
                 default:
                     Logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
