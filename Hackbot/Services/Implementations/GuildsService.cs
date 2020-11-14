@@ -19,7 +19,7 @@ namespace Hackbot.Services.Implementations
     /// </summary>
     public class GuildsService : IGuildsService
     {
-        private GuildContext guildsDb;
+        private GuildsContext guildsDb;
         private BackgroundQueue queue;
 
         private IRequestsService requests;
@@ -328,7 +328,7 @@ namespace Hackbot.Services.Implementations
         private static GuildsService _instance = null;
         private GuildsService()
         {
-            guildsDb = new GuildContext();
+            guildsDb = new GuildsContext();
             queue = new BackgroundQueue();
 
             requests = RequestsService.GetInstance();

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hackbot.Migrations.Guild
 {
-    [DbContext(typeof(GuildContext))]
+    [DbContext(typeof(GuildsContext))]
     [Migration("20201104235425_initial")]
     partial class initial
     {

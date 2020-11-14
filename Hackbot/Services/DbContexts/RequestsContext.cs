@@ -1,8 +1,11 @@
-﻿using Hackbot.Structures;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.IO;
 using System.Text;
+using System.Collections.Generic;
+
+using Microsoft.EntityFrameworkCore;
+
+using Hackbot.Structures;
 
 namespace Hackbot.Services.DbContexts
 {
@@ -22,7 +25,7 @@ namespace Hackbot.Services.DbContexts
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite("Data Source=requests.db")
+            => options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), "Databases/requests.db")}")
                       .EnableDetailedErrors();
     }
 }

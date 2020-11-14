@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Controllers\SceneController.cs~RF129cbc08.TMP" />
-    <None Remove="Controllers\SceneController.cs~RF268c3308.TMP" />
+    <Compile Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include=".github\workflows\dotnet-core.yml" />
+    <None Remove="Controllers\SceneController.cs~RF129cbc08.TMP" />
+    <None Remove="Controllers\SceneController.cs~RF268c3308.TMP" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +40,10 @@
     <None Update="Nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Databases\" />
   </ItemGroup>
 
 </Project>

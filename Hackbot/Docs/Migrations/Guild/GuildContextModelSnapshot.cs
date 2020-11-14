@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hackbot.Migrations.Guild
 {
-    [DbContext(typeof(GuildContext))]
+    [DbContext(typeof(GuildsContext))]
     partial class GuildContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
