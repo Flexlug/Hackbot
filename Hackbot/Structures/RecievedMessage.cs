@@ -31,7 +31,5 @@ namespace Hackbot.Structures
         /// Информация о диалоге с пользователей
         /// </summary>
         public Chat Chat { get; set; }
-
-        public Contact Contact { get; set; }
     }
 }

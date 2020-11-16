@@ -34,9 +34,9 @@ namespace Hackbot.Scenes
         // user input
         private string captainDescrption = string.Empty;
         private string captainName = string.Empty;
+        private string captainRole = string.Empty;
         private string guildName = string.Empty;
         private string guildDescription = string.Empty;
-        private GuildRoles captainRole;
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
         {

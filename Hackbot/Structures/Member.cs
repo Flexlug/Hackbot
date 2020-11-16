@@ -30,7 +30,7 @@ namespace Hackbot.Structures
         /// <summary>
         /// Роль участника в команде
         /// </summary>
-        public GuildRoles Role { get; set; }
+        public string Role { get; set; }
 
         /// <summary>
         /// ID чата для отправки уведомлений
