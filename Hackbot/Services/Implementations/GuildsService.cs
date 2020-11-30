@@ -168,9 +168,12 @@ namespace Hackbot.Services.Implementations
                         return null;
 
                     // Проверяем, есть ли в списке команды, в которые была подана заявка и удаляем таковые из списка
-                    foreach (Guild g in gs)
-                        if (reqs.Contains(g.CaptainId))
-                            gs.Remove(g);
+                    List<Guild> rgs = gs.Select(x => x)
+                                        .Where(x => reqs.Contains(x.CaptainId))
+                                        .ToList();
+
+                    foreach (Guild g in rgs)
+                        gs.Remove(g);
 
                     return gs;
                 }
@@ -309,6 +312,27 @@ namespace Hackbot.Services.Implementations
             }
         }
 
+        private List<Guild> GetAllGuilds()
+        {
+            try
+            {
+                using (var transaction = guildsDb.Database.BeginTransaction())
+                {
+                    List<Guild> gs = guildsDb.Guilds.Include(x => x.Members)
+                                                    .AsNoTracking()
+                                                    .Select(x => x)
+                                                    .ToList();
+
+                    return gs;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, $"Error in GetAllGuilds method.");
+                return null;
+            }
+        }
+
         public async Task<List<Guild>> GetAvaliableGuildsAsync(long memberId) => await queue.QueueTask(() => GetAvaliableGuilds(memberId));
         public async Task<Guild> GetGuildByCaptianAsync(long captain) => await queue.QueueTask(() => GetGuildByCaptian(captain));
         public async Task AddGuildAsync(Guild guild) => await queue.QueueTask(() => AddGuild(guild));
@@ -321,7 +345,7 @@ namespace Hackbot.Services.Implementations
         public async Task AddMemberToGuildAsync(Guild guild, Member member) => await queue.QueueTask(() => AddMemberToGuild(guild, member));
         public async Task RemoveMemberFromGuildAsync(Guild guild, Member member) => await queue.QueueTask(() => RemoveMemberFromGuild(guild, member));
         public async Task ChangeGuildDescriptionAsync(Guild guild, string description) => await queue.QueueTask(() => ChangeGuildDescription(guild, description));
-
+        public async Task<List<Guild>> GetAllGuildsAsync() => await queue.QueueTask(() => GetAllGuilds());
 
         #region Singleton
 

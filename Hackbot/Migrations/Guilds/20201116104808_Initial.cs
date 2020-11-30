@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Hackbot.Migrations.Guild
+namespace Hackbot.Migrations.Guilds
 {
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -23,22 +23,22 @@ namespace Hackbot.Migrations.Guild
                 });
 
             migrationBuilder.CreateTable(
-                name: "Member",
+                name: "Members",
                 columns: table => new
                 {
                     P_KEY = table.Column<ulong>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(nullable: true),
                     Description = table.Column<string>(nullable: true),
-                    Role = table.Column<int>(nullable: false),
+                    Role = table.Column<string>(nullable: true),
                     Id = table.Column<long>(nullable: false),
                     GuildP_KEY = table.Column<ulong>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Member", x => x.P_KEY);
+                    table.PrimaryKey("PK_Members", x => x.P_KEY);
                     table.ForeignKey(
-                        name: "FK_Member_Guilds_GuildP_KEY",
+                        name: "FK_Members_Guilds_GuildP_KEY",
                         column: x => x.GuildP_KEY,
                         principalTable: "Guilds",
                         principalColumn: "P_KEY",
@@ -46,15 +46,15 @@ namespace Hackbot.Migrations.Guild
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Member_GuildP_KEY",
-                table: "Member",
+                name: "IX_Members_GuildP_KEY",
+                table: "Members",
                 column: "GuildP_KEY");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Member");
+                name: "Members");
 
             migrationBuilder.DropTable(
                 name: "Guilds");

@@ -10,10 +10,13 @@ using NLog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-using Hackbot.Util;
+
 using Hackbot.Services;
 using Hackbot.Structures;
 using Hackbot.Services.Implementations;
+
+using Centvrio.Emoji;
+using Hackbot.Util;
 
 namespace Hackbot.Scenes
 {
@@ -50,33 +53,33 @@ namespace Hackbot.Scenes
                 // Ввод имени
                 case 0:
                     NextStage();
-                    return Respond("Запущен процесс регистрации команды. Вам нужно будет заполнить информацию о себе и новой команде.\n\nНачнём с Вас.\nВведите пожалуйста своё имя.",
+                    return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Запущен процесс регистрации команды.\nВам нужно будет заполнить информацию о себе и новой команде.\n\n{AudioVideo.Play} Начнём с Вас.\n\n{Alphanum.Information} Этап 1 из 2\n{AudioVideo.Play} Введите пожалуйста своё имя.",
                                    GetStandardKeyboard());
 
                 // Проверка имени на валидность
                 // Ввод Member.Description
                 case 1:
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Вы ввели пустое имя. Повторите, пожалуйста, ещё раз.",
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое имя. Повторите, пожалуйста, ещё раз.",
                                        GetStandardKeyboard());
 
                     captainName = ans.Text;
 
                     NextStage();
-                    return Respond("Опишите в 2-3 предложениях свои основные навыки и чем вы можете быть полезны команде.",
+                    return Respond($"{Alphanum.Information} Этап 2 из 2\n{AudioVideo.Play} Опишите в 2-3 предложениях свои основные навыки и чем вы можете быть полезны команде.",
                                    GetStandardKeyboard());
 
                 // Проверка Member.Description на валидность
                 // Вопрос о правильности введённых данных
                 case 2:
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Вы ввели пустое сообщение. Не стесняйтесь написать хоть что-нибудь о себе. В противном же случае просто напишите \"капитан\" =).",
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое сообщение. Не стесняйтесь написать хоть что-нибудь о себе. В противном же случае просто напишите \"капитан\" =).",
                                        GetStandardKeyboard());
 
                     captainDescrption = ans.Text;
 
                     NextStage();
-                    return Respond($"Ваше имя: {captainName}\nВаши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.",
+                    return Respond($"{OtherSymbols.Question} Подтвердите правильность введённых данных\n\n{AudioVideo.Play} Ваше имя: {captainName}\n{AudioVideo.Play} Ваши навыки: {captainDescrption}",
                                    GetYesNoKeyboard());
 
                 // Yes/No на вопрос о правильности составленного "резюме"
@@ -85,16 +88,16 @@ namespace Hackbot.Scenes
                     if (CheckNegativeInline(ans))
                     {
                         ToStage(1);
-                        return Respond("Процесс ввода ваших данных запущен заново. Введите пожалуйста своё имя.",
+                        return Respond($"{OtherSymbols.CrossMark} Процесс ввода ваших данных запущен заново. Введите пожалуйста своё имя.",
                                        GetStandardKeyboard());
                     }
 
                     if (DetectYesNoInvalidInline(ans))
-                        return Respond($"Ответ не распознан.\n\nВаше имя: {captainName}\nВаши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.",
+                        return Respond($"{OtherSymbols.CrossMark} Ответ не распознан.\n\n{AudioVideo.Play} Ваше имя: {captainName}\n{AudioVideo.Play} Ваши навыки: {captainDescrption}\n\n\nПодтвердите правильность введённых данных.",
                                        GetYesNoKeyboard());
 
                     NextStage();
-                    return Respond("Теперь про команду.\n\nВведите название команды.",
+                    return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Теперь введем данные о новой команде.\n\n{Alphanum.Information} Этап 1 из 3\n{AudioVideo.Play} Введите название команды.",
                                    GetStandardKeyboard());
 
                 // Проверка названия команды на валидность
@@ -102,13 +105,13 @@ namespace Hackbot.Scenes
                 case 4:
 
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Вы ввели пустое название команды. Повторите ещё раз.",
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое название команды. Повторите ещё раз.",
                                        GetStandardKeyboard());
 
                     guildName = ans.Text;
 
                     NextStage();
-                    return Respond($"Вы ввели название команды: {ans.Text}\nТеперь напишите краткое описание команды, чтобы Вашим будущим сокомандникам было понятно, в каком направлении преимущественно будет вестись работа. Можете указать конкретные кейсы, которым скорее всего будет отдано предпочтение.",
+                    return Respond($"{Alphanum.Information} Этап 2 из 3\n{AudioVideo.Play} Введите краткое описание команды. Укажите, кто нужен команде. В каком направлении скорее всего команда будет работать.",
                                    GetStandardKeyboard());
 
                 // Проверка описания команды на валидность
@@ -116,31 +119,26 @@ namespace Hackbot.Scenes
                 case 5:
 
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Вы ввели пустое описание команды. Повторите ещё раз.",
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое описание команды. Повторите ещё раз.",
                                        GetStandardKeyboard());
 
                     guildDescription = ans.Text;
 
                     NextStage();
-                    return Respond($"Вы ввели описание команды: {ans.Text}\nВыберете пожалуйста, какую роль вы будете выполнять в команде (помимо капитанской).",
-                                   GetRolesKeyboard());
+                    return Respond($"{Alphanum.Information} Этап 3 из 3\n{AudioVideo.Play} Какую роль вы будете исполнять в команде (помимо капитанской)?.",
+                                   GetStandardKeyboard());
 
                 // Проверка введенной роли на валидность
                 // Подтверждение введённых данных о команде
                 case 6:
+                    if (CheckEmptyMsgText(ans))
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое сообщение. Повторите ещё раз.",
+                                       GetStandardKeyboard());
 
-                    GuildRoles? role = Converter.FromStrToGuildRole(ans.InlineData);
-                    if (role == null)
-                    {
-                        Logger.Debug($"Converter couldn't convert role. input: {ans.InlineData}");
-                        return Respond("Ошибка при распознавании роли. Повторите, пожалуйста, выбор роли.",
-                                       GetRolesKeyboard());
-                    }
-
-                    captainRole = (GuildRoles)role;
+                    captainRole = ans.Text;
 
                     NextStage();
-                    return Respond($"Название команды: {guildName}\nОписание команды: {guildDescription}\nВаша роль: {Converter.GuildRoleToStr(captainRole)}\n\nПодтвердите правильность введённых данных.",
+                    return Respond($"{OtherSymbols.Question}Подтвердите правильность введённых данных\n\n{AudioVideo.Play} Название команды: {guildName}\n{AudioVideo.Play} Описание команды: {guildDescription}\n{AudioVideo.Play} Ваша роль: {captainRole}\n\n",
                                    GetYesNoKeyboard());
 
                 // Подтверждение введённых данных о команде. Создание команды
@@ -150,12 +148,12 @@ namespace Hackbot.Scenes
                     if (CheckNegativeInline(ans))
                     {
                         ToStage(3);
-                        return Respond("Процесс регистрации команды запущен заново.Введите пожалуйста название команды.",
+                        return Respond($"{Alphanum.Information} Процесс регистрации команды запущен заново.\n\n{Alphanum.Information} Этап 1 из 2\n{AudioVideo.Play} Введите пожалуйста название команды.",
                                        GetStandardKeyboard());
                     }
 
                     if (DetectYesNoInvalidInline(ans))
-                        return Respond($"Ответ не распознан.\n\nВаше имя: {captainName}\nНазвание команды: {guildName}\nВаша роль: {Converter.GuildRoleToStr(captainRole)}\n\nПодтвердите правильность введённых данных.",
+                        return Respond($"{OtherSymbols.CrossMark} Ответ не распознан.\n\nВаше имя: {captainName}\nНазвание команды: {guildName}\nВаша роль: {captainRole}\n\nПодтвердите правильность введённых данных.",
                                        GetYesNoKeyboard());
 
 
@@ -183,10 +181,10 @@ namespace Hackbot.Scenes
                     Logger.Debug($"Adding guild to DB.");
                     await guilds.AddGuildAsync(guild);
 
-                    return MainMenu($"Команда \"{guild.Name}\" успешно создана.");
+                    return MainMenu($"Команда \"{guild.Name}\" успешно создана. {FaceRole.Partying}");
 
                 default:
-                    return Respond("Ответ не распознан.",
+                    return Respond($"{OtherSymbols.CrossMark} Ответ не распознан.",
                                    GetStandardKeyboard());
             }
         }

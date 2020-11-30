@@ -15,6 +15,7 @@ using Hackbot.Controllers;
 using Hackbot.Services.Implementations;
 
 using NLog;
+using Telegram.Bot.Types.InputFiles;
 
 namespace Hackbot
 {
@@ -113,12 +114,11 @@ namespace Hackbot
                         Chat = e.Message.Chat,
                         Text = e.Message.Text,
                         From = e.Message.From,
-                        Contact = e.Message.Contact
                     });
                     break;
 
                 default:
-                    await botClient.SendTextMessageAsync(e.Message.Chat, "Поддерживаются только текстовые сообщения.", replyMarkup: GetMenuKeyboard());
+                    await botClient.SendTextMessageAsync(e.Message.Chat, "Поддерживаются только текстовые сообщения.", replyMarkup: GetMenuKeyboard(), parseMode: ParseMode.Html);
                     break;
             }
         }
@@ -131,7 +131,7 @@ namespace Hackbot
         private async Task ComputeRecievedMessage(RecievedMessage msg)
         {
             SceneResult res = await sceneController.GenerateResult(msg);
-            await botClient.SendTextMessageAsync(msg.Chat.Id, res.Answer, replyMarkup: res.KeyboardMarkup);
+            await botClient.SendTextMessageAsync(msg.Chat.Id, res.Answer, replyMarkup: res.KeyboardMarkup, parseMode: ParseMode.Html);
         }
     }
 }

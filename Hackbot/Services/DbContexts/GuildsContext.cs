@@ -30,7 +30,7 @@ namespace Hackbot.Services.DbContexts
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), "Databases/guilds.db")}")
+            => options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), "guilds.db")}")
                       .EnableDetailedErrors();
     }
 }

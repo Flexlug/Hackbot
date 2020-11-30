@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Hackbot.Migrations.Guild
+namespace Hackbot.Migrations.Guilds
 {
     [DbContext(typeof(GuildsContext))]
-    [Migration("20201104235425_initial")]
-    partial class initial
+    [Migration("20201116104808_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -59,14 +59,14 @@ namespace Hackbot.Migrations.Guild
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Role")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("P_KEY");
 
                     b.HasIndex("GuildP_KEY");
 
-                    b.ToTable("Member");
+                    b.ToTable("Members");
                 });
 
             modelBuilder.Entity("Hackbot.Structures.Member", b =>

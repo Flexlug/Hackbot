@@ -1,4 +1,5 @@
-﻿using Hackbot.Services;
+﻿using Centvrio.Emoji;
+using Hackbot.Services;
 using Hackbot.Services.Implementations;
 using Hackbot.Structures;
 using Hackbot.Util;
@@ -26,12 +27,13 @@ namespace Hackbot.Scenes
         private IGuildsService guilds { get; set; }
         private IRequestsService reqs { get; set; }
         private INotifyService notify { get; set; }
+        private IUserGetterService user { get; set; }
         private ISceneControllerNotifyer controllerNotifyer { get; set; }
 
-        private string[] keyboardMarkup = new string[] { "Изменить описание", "change_descr",
-                                                         "Просмотреть заявки", "watch_reqs",
-                                                         "Удалить участника", "remove_member",
-                                                         "Удалить команду", "remove_guild",
+        private string[] keyboardMarkup = new string[] { $"{BookPaper.Label} Изменить описание", "change_descr",
+                                                         $"{BookPaper.PageFacingUp} Просмотреть заявки", "watch_reqs",
+                                                         $"{OtherSymbols.CrossMark} Удалить участника", "remove_member",
+                                                         $"{OtherSymbols.CrossMark} Удалить команду", "remove_guild",
                                                          "Главное меню", "mainmenu" };
 
         public CaptainGuildEditScene(Guild currentGuild)
@@ -43,6 +45,7 @@ namespace Hackbot.Scenes
             guilds = GuildsService.GetInstance();
             notify = NotifyService.GetInstance();
             reqs = RequestsService.GetInstance();
+            user = UserGetterService.GetInstance();
             controllerNotifyer = SceneControllerNotifyer.GetInstance();
         }
 
@@ -51,17 +54,24 @@ namespace Hackbot.Scenes
         /// </summary>
         /// <param name="g">Ссылка на команду</param>
         /// <returns></returns>
-        private string ReturnGuildDescr(Guild g)
+        private async Task<string> ReturnGuildDescr(Guild g)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"Название команды: {g.Name}");
-            sb.AppendLine($"Описание команды: {g.Description}\n");
+            sb.AppendLine($"{AudioVideo.Play} Название команды: {g.Name}");
+            sb.AppendLine($"{AudioVideo.Play} Описание команды: {g.Description}\n");
             sb.AppendLine($"Количество участников: {g.Members.Count}");
 
             for (int i = 0; i < g.Members.Count; i++)
             {
-                sb.AppendLine($"№{i + 1}: {g.Members[i].Name} ({Converter.GuildRoleToStr(g.Members[i].Role)})"); 
+                string userName = (await user.GetUserAsync(g.Members[i].Id)).Username;
+                if (string.IsNullOrEmpty(userName))
+                    userName = $"<a href=\"tg://user?id={g.Members[i].Id}\">ЛС</a>";
+                else
+                    userName = "@" + userName;
+
+                sb.AppendLine($"{EmojiHelp.Digit(i + 1)}: {g.Members[i].Name} ({g.Members[i].Role})");
+                sb.AppendLine($" - {userName}");
                 sb.AppendLine($" - {g.Members[i].Description}");
             }
 
@@ -73,12 +83,20 @@ namespace Hackbot.Scenes
         /// </summary>
         /// <param name="g"></param>
         /// <returns></returns>
-        private string ReturnGuildTeam(Guild g)
+        private async Task<string> ReturnGuildTeam(Guild g)
         {
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < currentGuild.Members.Count; i++)
-                sb.AppendLine($"№{i + 1}: {g.Members[i].Name} ({Converter.GuildRoleToStr(g.Members[i].Role)}) {(g.Members[i].Id == g.CaptainId ? "CAP" : "")}");
+            for (int i = 0; i < g.Members.Count; i++)
+            {
+                string userName = (await user.GetUserAsync(g.Members[i].Id))?.Username;
+                if (string.IsNullOrEmpty(userName))
+                    userName = $"<a href=\"tg://user?id={g.Members[i].Id}\">ЛС</a>";
+                else
+                    userName = "@" + userName;
+
+                sb.AppendLine($"{EmojiHelp.Digit(i + 1)}: {userName} ({g.Members[i].Role}) {(g.Members[i].Id == g.CaptainId ? "CAP" : "")}");
+            }
 
             return sb.ToString();
         }
@@ -89,6 +107,9 @@ namespace Hackbot.Scenes
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
         {
+            // Постоянно обновляем данные о гильдии
+            currentGuild = await guilds.GetGuildByCaptianAsync(currentGuild.CaptainId);
+
             if (CheckMenuEscape(ans))
                 return MainMenu();
 
@@ -101,7 +122,7 @@ namespace Hackbot.Scenes
                 // Вход в меню
                 case 0:
                     NextStage();
-                    return Respond($"Панель управления командой: \n{ReturnGuildDescr(currentGuild)}",
+                    return Respond($"{Tool.Wrench} Панель управления командой: \n\n{await ReturnGuildDescr(currentGuild)}",
                                    GenerateKeyboard(keyboardMarkup));
 
                 // ГЛАВНОЕ МЕНЮ
@@ -110,7 +131,7 @@ namespace Hackbot.Scenes
                     {
                         case "change_descr":
                             ToStage(4);
-                            return Respond("Введите пожалуйста новое описание команды.",
+                            return Respond($"{AudioVideo.Play} Введите пожалуйста новое описание команды.",
                                            GetStandardKeyboard("guildmenu"));
 
                         case "watch_reqs":
@@ -118,16 +139,16 @@ namespace Hackbot.Scenes
 
                         case "remove_member":
                             ToStage(2);
-                            return Respond($"Введите пожалуйста порядковый номер исключаемого участника.\n{ReturnGuildTeam(currentGuild)}",
+                            return Respond($"{AudioVideo.Play} Введите пожалуйста порядковый номер исключаемого участника.\n{await ReturnGuildTeam(currentGuild)}",
                                            GenerateKeyboard(GetNumericMarkup(currentGuild.Members.Count)));
 
                         case "remove_guild":
                             ToStage(6);
-                            return Respond($"Вы уверены, что хотите удалить команду {currentGuild.Name}? Действие будет невозможно отменить!\nДля удаления введите название команды.",
+                            return Respond($"{OtherSymbols.ExclamationQuestion} Вы уверены, что хотите удалить команду {currentGuild.Name}? Действие будет невозможно отменить!\nДля удаления введите название команды.",
                                            GetStandardKeyboard("guildmenu"));
 
                         default:
-                            return Respond($"Ответ не распознан.\nПанель управления командой: \n{ReturnGuildDescr(currentGuild)}",
+                            return Respond($"{OtherSymbols.Question} Ответ не распознан.\n{Tool.Wrench} Панель управления командой: \n\n{await ReturnGuildDescr(currentGuild)}",
                                            GenerateKeyboard(keyboardMarkup));
                     }
 
@@ -136,7 +157,7 @@ namespace Hackbot.Scenes
                 case 2:
                     int outp = -1;
                     if (!(int.TryParse(ans.InlineData, out outp) && outp <= currentGuild.Members.Count && outp > 0))
-                        return Respond("Ответ не распознан. Повторите выбор участника.",
+                        return Respond($"{OtherSymbols.Question} Ответ не распознан. Повторите выбор участника.",
                                        GenerateKeyboard(GetNumericMarkup(currentGuild.Members.Count)));
 
                     NextStage();
@@ -146,11 +167,18 @@ namespace Hackbot.Scenes
                     if (deletingMem.Id == currentGuild.CaptainId)
                     {
                         ToStage(1);
-                        return Respond($"Вы не можете исключить самого себя\n\n{ReturnGuildDescr(currentGuild)}",
+                        return Respond($"{OtherSymbols.Exclamation} Вы не можете исключить самого себя\n\n{await ReturnGuildDescr(currentGuild)}",
                                        GenerateKeyboard(keyboardMarkup));
                     }
 
-                    return Respond($"Вы собираетесь удалить из команды следующего участника:\nИмя: {deletingMem.Name}\nРоль: {Converter.GuildRoleToStr(deletingMem.Role)}\nОписание: {deletingMem.Description}\n\nВы уверены?",
+
+                    string userName = (await user.GetUserAsync(deletingMem.Id))?.Username;
+                    if (string.IsNullOrEmpty(userName))
+                        userName = $"<a href=\"tg://user?id={deletingMem?.Id}\">ЛС</a>";
+                    else
+                        userName = "@" + userName;
+
+                    return Respond($"{OtherSymbols.Question} Вы собираетесь удалить из команды следующего участника:\n\n{AudioVideo.Play} Имя: {deletingMem.Name}\n{AudioVideo.Play} {userName}\n{AudioVideo.Play} Роль: {deletingMem.Role}\n{AudioVideo.Play} Описание: {deletingMem.Description}\n\nВы уверены?",
                                    GetYesNoKeyboard("guildmenu"));
 
                 // Удаление участника или отмена этого действия
@@ -158,31 +186,35 @@ namespace Hackbot.Scenes
                     if (CheckNegativeInline(ans))
                     {
                         ToStage(1);
-                        return Respond($"Отмена\n\n{ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
+                        return Respond($"{OtherSymbols.CrossMark} Отмена\n\n{await ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
                     }
 
                     if (DetectYesNoInvalidInline(ans))
-                        return Respond("Ответ не распознан. Повторите ещё раз.",
+                        return Respond($"{OtherSymbols.Question} Ответ не распознан. Повторите ещё раз.",
                                        GetYesNoKeyboard("guildmenu"));
 
+                    currentGuild.Members.Remove(
+                            currentGuild.Members.FirstOrDefault(x => x.Id == deletingMem.Id)
+                        );
+
                     await guilds.RemoveMemberFromGuildAsync(currentGuild, deletingMem);
-                    await notify.NotifyAsync(deletingMem.Id, $"Вы были исключены из команды: {currentGuild.Name}");
+                    await notify.NotifyAsync(deletingMem.Id, $"{OtherSymbols.CrossMark} Вы были исключены из команды: {currentGuild.Name}");
                     await controllerNotifyer.RemoveUserDialogAsync(deletingMem.Id);
 
-                    return Respond($"Участник удалён из команды.\n\n{ReturnGuildDescr(currentGuild)}",
+                    return Respond($"{OtherSymbols.CrossMark} Участник удалён из команды.\n\n{await ReturnGuildDescr(currentGuild)}",
                                    GenerateKeyboard(keyboardMarkup));
 
                 // ВВОД НОВОГО ОПИСАНИЯ
                 // Подтверждение изменения
                 case 4:
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Введён пустой текст.",
+                        return Respond($"{OtherSymbols.Question} Введён пустой текст.",
                                        GetStandardKeyboard("guildmenu"));
 
                     newDescription = ans.Text;
 
                     NextStage();
-                    return Respond($"Вы уверены?", GetYesNoKeyboard("guildmenu"));
+                    return Respond($"{AudioVideo.Play} Вы уверены?", GetYesNoKeyboard("guildmenu"));
 
                 // Валидация да/нет
                 // Изменение описания
@@ -190,17 +222,17 @@ namespace Hackbot.Scenes
                     if (CheckNegativeInline(ans))
                     {
                         ToStage(1);
-                        return Respond($"Отмена\n\n{ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
+                        return Respond($"{OtherSymbols.Question} Отмена\n\n{await ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
                     }
 
                     if (DetectYesNoInvalidInline(ans))
-                        return Respond("Ответ не распознан. Повторите, пожалуйста, ввод.", GetYesNoKeyboard("guildmenu"));
+                        return Respond($"{OtherSymbols.Question} Ответ не распознан. Повторите, пожалуйста, ввод.", GetYesNoKeyboard("guildmenu"));
 
                     await guilds.ChangeGuildDescriptionAsync(currentGuild, newDescription);
                     currentGuild.Description = newDescription;
 
                     ToStage(1);
-                    return Respond($"Описание изменено.\n\n{ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
+                    return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Описание изменено.\n\n{await ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
 
 
                 // УДАЛЕНИЕ команды
@@ -210,26 +242,26 @@ namespace Hackbot.Scenes
                     if (CheckEmptyMsgText(ans) || ans.Text != currentGuild.Name)
                     {
                         ToStage(1);
-                        return Respond($"Отмена\n\n{ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
+                        return Respond($"{OtherSymbols.Question} Отмена\n\n{await ReturnGuildDescr(currentGuild)}", GenerateKeyboard(keyboardMarkup));
                     }
 
                     await guilds.RemoveGuildAsync(currentGuild);
 
                     foreach (Request req in await reqs.GetRequestsByCaptainIdAsync(currentGuild.CaptainId))
-                        await notify.NotifyAsync(req.From, $"Команда {currentGuild.Name}, в которую Вы подавали заявку на вступление, была удалена.");
+                        await notify.NotifyAsync(req.From, $"{OtherSymbols.CrossMark} Команда {currentGuild.Name}, в которую Вы подавали заявку на вступление, была удалена.");
 
                     await reqs.RemoveRequestsByCaptainIdAsync(currentGuild.CaptainId);
 
                     foreach (Member mem in currentGuild.Members)
                     {
-                        await notify.NotifyAsync(mem.Id, $"Команда {currentGuild.Name}, в которой Вы состояли, была удалена.");
+                        await notify.NotifyAsync(mem.Id, $"{OtherSymbols.CrossMark} Команда {currentGuild.Name}, в которой Вы состояли, была удалена.");
                         await controllerNotifyer.RemoveUserDialogAsync(mem.Id);
                     }
 
-                    return MainMenu("Команда удалена");
+                    return MainMenu($"{OtherSymbols.CrossMark} Команда удалена");
 
                 default:
-                    return Respond($"Ответ не распознан.\nПанель управления командой: \n{ReturnGuildDescr(currentGuild)}",
+                    return Respond($"{OtherSymbols.Question} Ответ не распознан.\n{Tool.Wrench} Панель управления командой: \n\n{await ReturnGuildDescr(currentGuild)}",
                        GenerateKeyboard(keyboardMarkup));
             }
 

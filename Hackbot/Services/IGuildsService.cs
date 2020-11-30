@@ -95,5 +95,11 @@ namespace Hackbot.Services
         /// </summary>
         /// <returns></returns>
         public Task<List<long>> GetAllCaptainsAsync();
+
+        /// <summary>
+        /// Получить список всех гильдий
+        /// </summary>
+        /// <returns></returns>
+        public Task<List<Guild>> GetAllGuildsAsync();
     }
 }

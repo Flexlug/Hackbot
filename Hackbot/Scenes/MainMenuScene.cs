@@ -7,9 +7,12 @@ using NLog;
 
 using Hackbot.Services;
 using Hackbot.Structures;
+using Hackbot.Services.Implementations;
+
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using Hackbot.Services.Implementations;
+
+using Centvrio.Emoji;
 
 namespace Hackbot.Scenes
 {
@@ -26,8 +29,8 @@ namespace Hackbot.Scenes
         /// <summary>
         /// Разметка клавиатуры в главном меню
         /// </summary>
-        private string[] keyboardMarkup = new string[] { "Зарегистрировать команду", "register_guild",
-                                                         "Поиск команды", "search_guild" };
+        private string[] keyboardMarkup = new string[] { $"{OtherSymbols.HeavyPlus} Зарегистрировать команду", "register_guild",
+                                                         $"{Science.Telescope} Поиск команды", "search_guild" };
 
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
@@ -36,7 +39,7 @@ namespace Hackbot.Scenes
             {
                 case 0:
                     NextStage();
-                    return Respond("Вы используете бот Hackbot.\n\nДанная разработка поможет вам найти подходящую для Вас команду. Также Вы можете создать свою. Для этого выберете соответствующий пункт.",
+                    return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Вы используете бот Hackbot. {OtherSymbols.WhiteHeavyCheckMark}\n\n{Alphanum.Information} Данная разработка поможет вам найти подходящую для Вас команду. Также Вы можете создать свою. Для этого выберете соответствующий пункт.",
                                    GenerateKeyboard(keyboardMarkup));
 
                 case 1:
@@ -45,7 +48,7 @@ namespace Hackbot.Scenes
 
                     if (ans.Text == "getmyid") 
                     {
-                        return Respond($"Your id: {ans.From.Id}, Your phone: {ans.Contact.PhoneNumber}",
+                        return Respond($"{Arrow.Right} Your id: {ans.From.Id}",
                                        GenerateKeyboard(keyboardMarkup));                     
                     }
 
@@ -61,12 +64,12 @@ namespace Hackbot.Scenes
 
                         default:
                             logger.Debug($"Reached default case. chatid: {ans.Chat.Id}");
-                            return Respond("Ответ не распознан.",
+                            return Respond($"{OtherSymbols.Question} Ответ не распознан.",
                                            GenerateKeyboard(keyboardMarkup));
                     }
 
                 default:
-                    return Respond("Ответ не распознан. Возврат к главному меню.",
+                    return Respond($"{OtherSymbols.Question} Ответ не распознан. \nВозврат к главному меню",
                                    GenerateKeyboard(keyboardMarkup));
             }
         }

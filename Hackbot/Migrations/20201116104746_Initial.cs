@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Hackbot.Migrations.Requests
+namespace Hackbot.Migrations
 {
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,7 @@ namespace Hackbot.Migrations.Requests
                         .Annotation("Sqlite:Autoincrement", true),
                     From = table.Column<long>(nullable: false),
                     To = table.Column<long>(nullable: false),
-                    RequestingRole = table.Column<int>(nullable: false),
+                    Role = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true),
                     Description = table.Column<string>(nullable: true)
                 },

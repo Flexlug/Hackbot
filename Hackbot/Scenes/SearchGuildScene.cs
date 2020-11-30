@@ -11,6 +11,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Hackbot.Util;
 using System.Reflection.Metadata.Ecma335;
 using Hackbot.Services.Implementations;
+using Centvrio.Emoji;
 
 namespace Hackbot.Scenes
 {
@@ -45,32 +46,39 @@ namespace Hackbot.Scenes
         /// </summary>
         private INotifyService notify;
 
+        private IUserGetterService user;
+
         /// <summary>
         /// Возвращает текстовую информацию о команде
         /// </summary>
         /// <param name="guild">Ссылка на команду</param>
-        /// <returns></returns>
+        /// <returns></returns>ы
         private async Task<string> PrintGuildInfo(Guild guild)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append($"Название команды: {guild.Name}\n");
-            sb.Append($"Описание: {guild.Description}\n");
-            sb.Append($"Капитан: {await users.GetUserAsync(guild.CaptainId)}\n");
-            //sb.Append($"Капитан: [ссылка](tg://user?id={guild.CaptainId})\n");
-            sb.Append($"Количество участников: {guild.Members.Count}.\n");
+            string userName = (await user.GetUserAsync(guild.CaptainId)).Username;
+            if (string.IsNullOrEmpty(userName))
+                userName = $"<a href=\"tg://user?id={guild.CaptainId}\">ЛС</a>";
+            else
+                userName = "@" + userName;
+
+            sb.Append($"{AudioVideo.Play} Название команды: {guild.Name}\n");
+            sb.Append($"{AudioVideo.Play} Описание: {guild.Description}\n");
+            sb.Append($"{AudioVideo.Play} Капитан: {userName}\n");
+            sb.Append($"{AudioVideo.Play} Количество участников: {guild.Members.Count}.\n");
 
             return sb.ToString();
         }
 
-        private string[] guildNavKeyboardMarkup = new string[] { "Предыдущая команда", "prev_guild",
-                                                                 "Следующая команда", "next_guild",
-                                                                 "Отправить заявку", "request",
+        private string[] guildNavKeyboardMarkup = new string[] { $"{OtherSymbols.HeavyCheckMark}", "request",
+                                                                 $"{AudioVideo.FastReverse}", "prev_guild",
+                                                                 $"{AudioVideo.FastForward}", "next_guild",
                                                                  "Меню", "mainmenu" };
 
         private string memberName = string.Empty;
         private string memberDescription = string.Empty;
-        private GuildRoles memberRole;
+        private string memberRole = string.Empty;
 
         private List<Guild> avaliableGuilds = null;
         private int guildIter = 0;
@@ -83,6 +91,7 @@ namespace Hackbot.Scenes
             users = UserGetterService.GetInstance();
             reqs = RequestsService.GetInstance();
             notify = NotifyService.GetInstance();
+            user = UserGetterService.GetInstance();
         }
 
         public async override Task<SceneResult> GetResult(RecievedMessage ans)
@@ -96,55 +105,49 @@ namespace Hackbot.Scenes
                 case 0:
 
                     NextStage();
-                    return Respond("Запущен процесс поиска команды. Вам нужно будет заполнить информацию о себе.\n\nВведите пожалуйста своё имя.",
+                    return Respond($"{Alphanum.Information} Запущен процесс поиска команды. Вам нужно будет заполнить информацию о себе.\n\n{Alphanum.Information} Этап 1 из 3\n{AudioVideo.Play} Введите пожалуйста своё имя.",
                                    GetStandardKeyboard());
 
                 // Проверка имени на валидность
                 // Ввод резюме
                 case 1:
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Вы ввели пустое имя. Повторите, пожалуйста, ещё раз.",
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое имя. Повторите, пожалуйста, ещё раз.",
                                        GetStandardKeyboard());
 
                     memberName = ans.Text;
 
                     NextStage();
-                    return Respond("Опишите в 2-3 предложениях свои основные навыки и чем вы можете быть полезны команде.",
+                    return Respond($"{Alphanum.Information} Этап 2 из 3\n{AudioVideo.Play} Опишите в 2-3 предложениях свои основные навыки и чем вы можете быть полезны команде.",
                                    GetStandardKeyboard());
 
                 // Проверка резюме на валидность
                 // Ввод роли
                 case 2:
                     if (CheckEmptyMsgText(ans))
-                        return Respond("Вы ввели пустое описание. Повторите, пожалуйста, ещё раз.",
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое описание. Повторите, пожалуйста, ещё раз.",
                                        GetStandardKeyboard());
 
                     memberDescription = ans.Text;
 
                     NextStage();
-                    return Respond("Выберете роль, на которую вы претендуете.",
-                                   GetRolesKeyboard());
+                    return Respond($"{Alphanum.Information} Этап 3 из 3\n{AudioVideo.Play} Введите роль, которую будете исполнять.",
+                                   GetStandardKeyboard());
 
                 // Проверка ввода роли
                 // Поиск команды по заданным притериям
                 case 3:
-
-                    GuildRoles? role = Converter.FromStrToGuildRole(ans.InlineData);
-                    if (role == null)
-                    {
-                        Logger.Debug($"Converter couldn't convert role. input: {ans.InlineData}");
-                        return Respond("Ошибка при распознавании роли. Повторите, пожалуйста, выбор роли.",
-                                       GetRolesKeyboard());
-                    }
-
-                    memberRole = (GuildRoles)role;
+                    if (CheckEmptyMsgText(ans))
+                        return Respond($"{OtherSymbols.CrossMark} Вы ввели пустое сообщение. Повторите, пожалуйста, ещё раз.",
+                                       GetStandardKeyboard());
+                    memberRole = ans.Text;
 
                     avaliableGuilds = await guilds.GetAvaliableGuildsAsync(ans.From.Id);
                     if (avaliableGuilds == null || avaliableGuilds.Count == 0)
-                        return MainMenu("К сожалению на данный момент доступных команд для Вас нет.");
+                        return MainMenu($"{Geometric.RedCircle} К сожалению на данный момент доступных команд для Вас нет.");
 
                     NextStage();
-                    return Respond($"Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                    return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                    GenerateKeyboard(guildNavKeyboardMarkup));
 
                 case 4:
@@ -153,20 +156,20 @@ namespace Hackbot.Scenes
                     {
                         case "prev_guild":
                             if (guildIter == 0)
-                                return Respond($"Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                                return Respond($"{OtherSymbols.Exclamation} Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                                GenerateKeyboard(guildNavKeyboardMarkup));
 
                             guildIter--;
-                            return Respond($"Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                            return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                            GenerateKeyboard(guildNavKeyboardMarkup));
 
                         case "next_guild":
                             if (guildIter == avaliableGuilds.Count - 1)
-                                return Respond($"Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                                return Respond($"{OtherSymbols.Exclamation} Выход за пределы. Всего команд: {avaliableGuilds.Count}. Вы просматриваете команду №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                                GenerateKeyboard(guildNavKeyboardMarkup));
 
                             guildIter++;
-                            return Respond($"Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                            return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Надено подходящих команд: {avaliableGuilds.Count}.\nКоманда №{guildIter + 1}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                            GenerateKeyboard(guildNavKeyboardMarkup));
 
                         case "request":
@@ -176,29 +179,27 @@ namespace Hackbot.Scenes
                                 Description = memberDescription,
                                 From = ans.Chat.Id,
                                 To = avaliableGuilds[guildIter].CaptainId,
-                                RequestingRole = memberRole
+                                Role = memberRole
                             };
 
                             // Проверим, не успел ли подать участник заявку раннее... мало ли...
                             if (!(await reqs.ValidateRequestAsync(req.From, req.To)))
                             {
                                 await reqs.SubmitRequestAsync(req);
-                                await notify.NotifyAsync(req.To, "В Вашу команду поступила заявка на вступление. Просмотрите активные заявки в меню управления командой.");
+                                await notify.NotifyAsync(req.To, $"{OtherSymbols.WhiteHeavyCheckMark} В Вашу команду поступила заявка на вступление. Просмотрите активные заявки в меню управления командой.");
 
-                                return MainMenu("Заявка успешно отправлена. Командир команды скоро свяжется с Вами.");
+                                return MainMenu($"{OtherSymbols.WhiteHeavyCheckMark} Заявка успешно отправлена. Командир команды скоро свяжется с Вами.");
                             }
 
-                            return MainMenu("Вы уже подали заявку на вступление в эту команду");
+                            return MainMenu($"{OtherSymbols.CrossMark} Вы уже подали заявку на вступление в эту команду");
 
                         default:
-                            return Respond($"Ответ не распознан. Команда №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
+                            return Respond($"{OtherSymbols.Question} Ответ не распознан. Команда №{guildIter + 1} из {avaliableGuilds.Count}\n\n{await PrintGuildInfo(avaliableGuilds[guildIter])}",
                                            GenerateKeyboard(guildNavKeyboardMarkup));
                     }
-                    break;
-
             }
 
-            return MainMenu("Команда не распознана. Возврат в главное меню.");
+            return MainMenu($"{OtherSymbols.Question} Команда не распознана. Возврат в главное меню.");
         }
     }
 }

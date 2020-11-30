@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 using Telegram.Bot;
 
 namespace Hackbot.Services.Implementations
@@ -13,10 +14,18 @@ namespace Hackbot.Services.Implementations
     public class NotifyService : INotifyService
     {
         private ITelegramBotClient client;
+        private ILogger logger = LogManager.GetCurrentClassLogger();
 
         public async Task NotifyAsync(long userId, string text)
         {
-            await client.SendTextMessageAsync(userId, text);
+            try
+            {
+                await client.SendTextMessageAsync(userId, text);
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Could not find chat {userId}. Sending text: {text}");
+            }
         }
 
         #region Singleton

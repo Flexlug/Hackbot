@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Centvrio.Emoji;
+
 namespace Hackbot.Scenes
 {
     // TODO Реализовать главное меню участника
@@ -24,8 +26,9 @@ namespace Hackbot.Scenes
 
         private IGuildsService guilds { get; set; }
         private INotifyService notify { get; set; }
+        private IUserGetterService user { get; set; }
 
-        private string[] keyboardMarkup = new string[] { "Выйти из команды", "leave_guild" };
+        private string[] keyboardMarkup = new string[] { $"{OtherSymbols.CrossMark} Выйти из команды", "leave_guild" };
 
         private Member member { get; set; }
 
@@ -33,6 +36,7 @@ namespace Hackbot.Scenes
         {
             guilds = GuildsService.GetInstance();
             notify = NotifyService.GetInstance();
+            user = UserGetterService.GetInstance();
 
             CurrentGuild = guilds.GetGuildByMemberAsync(memberId).Result;
             Logger = LogManager.GetCurrentClassLogger();
@@ -43,17 +47,24 @@ namespace Hackbot.Scenes
         /// </summary>
         /// <param name="g">Ссылка на команду</param>
         /// <returns></returns>
-        private string ReturnGuildDescr(Guild g)
+        private async Task<string> ReturnGuildDescr(Guild g)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"Название команды: {g.Name}");
-            sb.AppendLine($"Описание команды: {g.Description}\n");
-            sb.AppendLine($"Количество участников: {g.Members.Count}");
+            sb.AppendLine($"{AudioVideo.Play} Название команды: {g.Name}");
+            sb.AppendLine($"{AudioVideo.Play} Описание команды: {g.Description}\n");
+            sb.AppendLine($"{AudioVideo.Play} Количество участников: {g.Members.Count}");
 
             for (int i = 0; i < g.Members.Count; i++)
             {
-                sb.AppendLine($"№{i + 1}: {g.Members[i].Name} ({Converter.GuildRoleToStr(g.Members[i].Role)})");
+                string userName = (await user.GetUserAsync(g.Members[i].Id)).Username;
+                if (string.IsNullOrEmpty(userName))
+                    userName = $"<a href=\"tg://user?id={g.Members[i].Id}\">ЛС</a>";
+                else
+                    userName = "@" + userName;
+
+                sb.AppendLine($"{EmojiHelp.Digit(i + 1)}: {g.Members[i].Name} ({g.Members[i].Role})");
+                sb.AppendLine($" - {userName}");
                 sb.AppendLine($" - {g.Members[i].Description}");
             }
 
@@ -65,7 +76,7 @@ namespace Hackbot.Scenes
             if (CheckMenuEscape(ans))
             {
                 ToStage(1);
-                return Respond($"Главное меню участника команды: {CurrentGuild.Name}.\n\n{ReturnGuildDescr(CurrentGuild)}",
+                return Respond($"{Alphanum.Information} Главное меню участника команды: {CurrentGuild.Name}.\n\n{await ReturnGuildDescr(CurrentGuild)}",
                                GenerateKeyboard(keyboardMarkup));
             }
 
@@ -75,7 +86,7 @@ namespace Hackbot.Scenes
                     member = CurrentGuild.Members.First(x => x.Id == ans.Chat.Id);
 
                     NextStage();
-                    return Respond($"Главное меню участника команды: {CurrentGuild.Name}.\n\n{ReturnGuildDescr(CurrentGuild)}",
+                    return Respond($"{Alphanum.Information} Главное меню участника команды: {CurrentGuild.Name}.\n\n{await ReturnGuildDescr(CurrentGuild)}",
                                    GenerateKeyboard(keyboardMarkup));
 
                 case 1:
@@ -83,11 +94,11 @@ namespace Hackbot.Scenes
                     {
                         case "leave_guild":
                             ToStage(2);
-                            return Respond($"Вы уверены, что хотите покинуть команду {CurrentGuild.Name}?",
+                            return Respond($"{OtherSymbols.Question} Вы уверены, что хотите покинуть команду {CurrentGuild.Name}?",
                                            GetYesNoKeyboard());
 
                         default:
-                            return Respond("Ответ не распознан.",
+                            return Respond($"{OtherSymbols.Question} Ответ не распознан.",
                                            GenerateKeyboard(keyboardMarkup));
                     }
 
@@ -96,25 +107,25 @@ namespace Hackbot.Scenes
                     if (CheckNegativeInline(ans))
                     {
                         ToStage(1);
-                        return Respond($"Отменено.\n\n{ReturnGuildDescr(CurrentGuild)}",
+                        return Respond($"{OtherSymbols.Question} Отменено.\n\n{await ReturnGuildDescr(CurrentGuild)}",
                                        GenerateKeyboard(keyboardMarkup));
                     }
 
                     if (DetectYesNoInvalidInline(ans))
-                        return Respond($"Ответ не распознан.\n\n{ReturnGuildDescr(CurrentGuild)}",
+                        return Respond($"{OtherSymbols.Question} Ответ не распознан.\n\n{await ReturnGuildDescr(CurrentGuild)}",
                                        GetYesNoKeyboard());
 
                     NextStage();
 
                     await guilds.RemoveMemberFromGuildAsync(CurrentGuild, member);
-                    await notify.NotifyAsync(CurrentGuild.CaptainId, $"{member.Name} покинул Вашу команду.");
+                    await notify.NotifyAsync(CurrentGuild.CaptainId, $"{OtherSymbols.CrossMark} {member.Name} покинул Вашу команду.");
 
-                    return MainMenu($"Вы покинули команду {CurrentGuild.Name}");
+                    return MainMenu($"{OtherSymbols.CrossMark} Вы покинули команду {CurrentGuild.Name}");
 
 
                 default:
                     Logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
-                    return Respond($"Ответ не распознан. Возврат к главному меню.\n\n{ReturnGuildDescr(CurrentGuild)}",
+                    return Respond($"{OtherSymbols.Question} Ответ не распознан. Возврат к главному меню.\n\n{await ReturnGuildDescr(CurrentGuild)}",
                                    GenerateKeyboard(keyboardMarkup));
             }
         }

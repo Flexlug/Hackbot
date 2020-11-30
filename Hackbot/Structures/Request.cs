@@ -29,7 +29,7 @@ namespace Hackbot.Structures
         /// <summary>
         /// Роль, на которую хочет попасть человек
         /// </summary>
-        public string RequestingRole { get; set; }
+        public string Role { get; set; }
 
         /// <summary>
         /// Имя человека, которым он представился

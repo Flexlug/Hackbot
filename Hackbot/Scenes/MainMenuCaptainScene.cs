@@ -1,4 +1,5 @@
-﻿using Hackbot.Services;
+﻿using Centvrio.Emoji;
+using Hackbot.Services;
 using Hackbot.Services.Implementations;
 using Hackbot.Structures;
 using NLog;
@@ -27,12 +28,11 @@ namespace Hackbot.Scenes
         /// </summary>
         private IGuildsService guilds { get; set; }
 
-        private string[] keyboardMarkup = new string[] { "Управление командой", "edit_guild" };
+        private string[] keyboardMarkup = new string[] { $"{Tool.Wrench} Управление командой", "edit_guild" };
 
         public MainMenuCaptainScene(long captianId)
         {
             guilds = GuildsService.GetInstance();
-
 
             CurrentGuild = guilds.GetGuildByCaptianAsync(captianId).Result;
             Logger = LogManager.GetCurrentClassLogger();
@@ -46,7 +46,7 @@ namespace Hackbot.Scenes
                     Member captain = CurrentGuild.Members.First(x => x.Id == CurrentGuild.CaptainId);
 
                     NextStage();
-                    return Respond($"Главное меню капитана команды {CurrentGuild.Name}.",
+                    return Respond($"{Alphanum.Information} Главное меню капитана команды {CurrentGuild.Name}.",
                                    GenerateKeyboard(keyboardMarkup));
 
                 case 1:
@@ -67,13 +67,13 @@ namespace Hackbot.Scenes
                             return NextScene(SceneTable.CaptainGuildEditScene, CurrentGuild);
 
                         default:
-                            return Respond("Ответ не распознан.",
+                            return Respond($"{OtherSymbols.Question} Ответ не распознан.",
                                            GenerateKeyboard(keyboardMarkup));
                     }
 
                 default:
                     Logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
-                    return Respond("Ответ не распознан. Возврат к главному меню.",
+                    return Respond($"{OtherSymbols.Question} Ответ не распознан. Возврат к главному меню.",
                                    GenerateKeyboard(keyboardMarkup));
             }
         }

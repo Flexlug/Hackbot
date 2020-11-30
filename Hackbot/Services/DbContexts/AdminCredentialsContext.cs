@@ -25,7 +25,7 @@ namespace Hackbot.Services.DbContexts
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), "Databases/admins.db")}")
+            => options.UseSqlite($"Data Source={Path.Combine(Directory.GetCurrentDirectory(), "admins.db")}")
                       .EnableDetailedErrors();
     }
 }

@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Hackbot.Migrations.Guild
+namespace Hackbot.Migrations.Guilds
 {
     [DbContext(typeof(GuildsContext))]
-    partial class GuildContextModelSnapshot : ModelSnapshot
+    partial class GuildsContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -57,14 +57,14 @@ namespace Hackbot.Migrations.Guild
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Role")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("P_KEY");
 
                     b.HasIndex("GuildP_KEY");
 
-                    b.ToTable("Member");
+                    b.ToTable("Members");
                 });
 
             modelBuilder.Entity("Hackbot.Structures.Member", b =>

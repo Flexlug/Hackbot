@@ -2,16 +2,14 @@
 using Hackbot.Services.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Hackbot.Migrations.Requests
+namespace Hackbot.Migrations
 {
     [DbContext(typeof(RequestsContext))]
-    [Migration("20201104235437_initial")]
-    partial class initial
+    partial class RequestsContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,8 +30,8 @@ namespace Hackbot.Migrations.Requests
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RequestingRole")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Role")
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("To")
                         .HasColumnType("INTEGER");

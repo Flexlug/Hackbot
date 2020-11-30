@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using NLog;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Requests;
@@ -19,12 +20,25 @@ namespace Hackbot.Services.Implementations
         /// </summary>
         private ITelegramBotClient client { get; set; }
 
+        private Logger logger = LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// Получить пользователя по ID
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<User> GetUserAsync(long userId) => (await client.GetChatMemberAsync(userId, (int)userId)).User;
+        public async Task<User> GetUserAsync(long userId)
+        {
+            try
+            {
+                return (await client.GetChatMemberAsync(userId, (int)userId))?.User;
+            }
+            catch(Exception ex)
+            {
+                logger.Error($"Could not find user {userId}.");
+                return null;
+            }
+        }
 
         #region Singleton
 

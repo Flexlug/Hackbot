@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 using NLog;
 
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
+using Hackbot.Util;
 using Hackbot.Structures;
+
+using Centvrio.Emoji;
 
 namespace Hackbot.Scenes
 {
@@ -127,12 +129,32 @@ namespace Hackbot.Scenes
             string[] strs = new string[(count + 1) * 2];
             for (int i = 0, ii = 1; i < count * 2; i += 2, ii++)
             {
-                strs[i] = ii.ToString();         // Название кнопки
+                strs[i] = EmojiHelp.Digit(ii);         // Название кнопки
                 strs[i + 1] = ii.ToString();     // Inline data
             }
 
             strs[strs.Length - 2] = "Меню";
             strs[strs.Length - 1] = "guildmenu";
+
+            return strs;
+        }
+
+        /// <summary>
+        /// Генерирует клавиатуру с порядковыми числами и выходом в главное меню
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        protected string[] GetNumericMarkup(int count, string customMenu)
+        {
+            string[] strs = new string[(count + 1) * 2];
+            for (int i = 0, ii = 1; i < count * 2; i += 2, ii++)
+            {
+                strs[i] = EmojiHelp.Digit(ii);         // Название кнопки
+                strs[i + 1] = ii.ToString();     // Inline data
+            }
+
+            strs[strs.Length - 2] = "Меню";
+            strs[strs.Length - 1] = customMenu;
 
             return strs;
         }
@@ -146,7 +168,7 @@ namespace Hackbot.Scenes
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
+                    InlineKeyboardButton.WithCallbackData($"Меню", "mainmenu")
                 }
             });
 
@@ -159,7 +181,7 @@ namespace Hackbot.Scenes
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Меню", customMenu)
+                    InlineKeyboardButton.WithCallbackData($"Меню", customMenu)
                 }
             });
 
@@ -172,15 +194,15 @@ namespace Hackbot.Scenes
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Да", "yes")
+                    InlineKeyboardButton.WithCallbackData($"{OtherSymbols.HeavyCheckMark}", "yes")
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Нет", "no")
+                    InlineKeyboardButton.WithCallbackData($"{OtherSymbols.CrossMark}", "no")
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
+                    InlineKeyboardButton.WithCallbackData($"Меню", "mainmenu")
                 }
             });
 
@@ -194,52 +216,15 @@ namespace Hackbot.Scenes
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Да", "yes")
+                    InlineKeyboardButton.WithCallbackData($"{OtherSymbols.HeavyCheckMark}", "yes")
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Нет", "no")
+                    InlineKeyboardButton.WithCallbackData($"{OtherSymbols.CrossMark}", "no")
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Меню", customMenu)
-                }
-            });
-
-        /// <summary>
-        /// Вернуть клавиатуру с выбором ролей
-        /// </summary>
-        /// <returns></returns>
-        protected InlineKeyboardMarkup GetRolesKeyboard() => new InlineKeyboardMarkup(
-            new[]
-            {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Backend разработчик", "role1")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Frontend разработчик", "role2"),
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("ГИС специалист", "role3")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Дизайнер", "role4")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Менеджер", "role5")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Не важно (или другое)", "OtherRole")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Меню", "mainmenu")
+                    InlineKeyboardButton.WithCallbackData($"Меню", customMenu)
                 }
             });
 
@@ -248,7 +233,7 @@ namespace Hackbot.Scenes
         /// </summary>
         /// <param name="args">Словарь с данными о клавиатуре в формате: название_кнопки1, inline_data1, название_кнопки2, inline_data2, название_кнопки3, inline_data3...</param>
         /// <returns>Сгенерированную inline клавиатуру</returns>
-        protected InlineKeyboardMarkup GenerateKeyboard(params string[] args)
+        protected InlineKeyboardMarkup GenerateKeyboard(string[] args)
         {
             List<List<InlineKeyboardButton>> buttons = new List<List<InlineKeyboardButton>>();
 

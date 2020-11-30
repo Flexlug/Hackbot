@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
+using Centvrio.Emoji;
+
 namespace Hackbot.Scenes
 {
     // TODO Реализовать меню просмотра поданых заявок на вступление в команды
@@ -19,12 +21,13 @@ namespace Hackbot.Scenes
         private IRequestsService reqs { get; set; }
         private IGuildsService guilds { get; set; }
         private INotifyService notify { get; set; }
+        private IUserGetterService user { get; set; }
         private ISceneControllerNotifyer controllerNotifyer { get; set; }
         private Guild currentGuild { get; set; }
         private List<Request> requests { get; set; }
 
-        private string[] keyboardMarkup = new string[] { "Принять заявку", "accept",
-                                                         "Отклонить заявку", "decline",
+        private string[] keyboardMarkup = new string[] { $"{OtherSymbols.WhiteHeavyCheckMark}", "accept",
+                                                         $"{OtherSymbols.CrossMark}", "decline",
                                                          "Назад", "toGuildEdit"};
 
         /// <summary>
@@ -32,12 +35,19 @@ namespace Hackbot.Scenes
         /// </summary>
         /// <param name="reqs">Коллекция заявок</param>
         /// <returns></returns>
-        private string PrintRequests(List<Request> reqs)
+        private async Task<string> PrintRequests(List<Request> reqs)
         {
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < reqs.Count; i++)
-                sb.AppendLine($"№{i + 1}\nОт: {reqs[i].Name} на роль: {Converter.GuildRoleToStr(reqs[i].RequestingRole)}\nСкиллы: {reqs[i].Description}");
+            for (int i = 0; i < reqs.Count; i++) {
+                string userName = (await user.GetUserAsync(reqs[i].From))?.Username;
+                if (string.IsNullOrEmpty(userName))
+                    userName = $"<a href=\"tg://user?id={reqs[i].From}\">ЛС</a>";
+                else
+                    userName = "@" + userName;
+
+                sb.AppendLine($"{EmojiHelp.Digit(i + 1)}\nОт: {reqs[i].Name} на роль: {reqs[i].Role}\nСкиллы: {reqs[i].Description}\n{userName}");
+            }
 
             return sb.ToString();
         }
@@ -51,6 +61,7 @@ namespace Hackbot.Scenes
             reqs = RequestsService.GetInstance();
             guilds = GuildsService.GetInstance();
             notify = NotifyService.GetInstance();
+            user = UserGetterService.GetInstance();
             controllerNotifyer = SceneControllerNotifyer.GetInstance();
         }
 
@@ -59,6 +70,10 @@ namespace Hackbot.Scenes
             if (CheckMenuEscape(ans))
                 return MainMenu();
 
+            if (ans.InlineData == "toGuildEdit")
+                return NextScene(SceneTable.CaptainGuildEditScene, currentGuild);
+
+
             switch (Stage)
             {
                 case 0:
@@ -66,10 +81,10 @@ namespace Hackbot.Scenes
 
                     NextStage();
                     if (requests == null || requests.Count == 0)
-                        return Respond($"Активных заявок нет.",
+                        return Respond($"{Geometric.RedCircle} Активных заявок нет.",
                                        GetStandardKeyboard("toGuildEdit"));
 
-                    return Respond($"Активные заявки на вступление: \n{PrintRequests(requests)}",
+                    return Respond($"{Geometric.GreenCircle} Активные заявки на вступление: \n{await PrintRequests(requests)}",
                                    GenerateKeyboard(keyboardMarkup));
 
                 // МЕНЮ ВЫБОРА КОМАНД
@@ -82,16 +97,16 @@ namespace Hackbot.Scenes
 
                         case "accept":
                             ToStage(2);
-                            return Respond("Выберете номер заявки.",
-                                           GenerateKeyboard(GetNumericMarkup(requests.Count)));
+                            return Respond($"{AudioVideo.Play} Выберете номер заявки.",
+                                           GenerateKeyboard(GetNumericMarkup(requests.Count, "toGuildEdit")));
 
                         case "decline":
                             ToStage(3);
-                            return Respond("Выберете номер заявки.",
-                                           GenerateKeyboard(GetNumericMarkup(requests.Count)));
+                            return Respond($"{AudioVideo.Play} Выберете номер заявки.",
+                                           GenerateKeyboard(GetNumericMarkup(requests.Count, "toGuildEdit")));
 
                         default:
-                            return Respond("Ответ не распознан.",
+                            return Respond($"{OtherSymbols.Question} Ответ не распознан.",
                                            GenerateKeyboard(keyboardMarkup));
                     }
 
@@ -100,8 +115,8 @@ namespace Hackbot.Scenes
                 case 2:
                     int outp = -1;
                     if (!(int.TryParse(ans.InlineData, out outp) && outp <= currentGuild.Members.Count && outp > 0))
-                        return Respond("Ответ не распознан. Повторите выбор заявки.",
-                                       GenerateKeyboard(GetNumericMarkup(currentGuild.Members.Count)));
+                        return Respond($"{OtherSymbols.Question} Ответ не распознан. Повторите выбор заявки.",
+                                       GenerateKeyboard(GetNumericMarkup(currentGuild.Members.Count, "toGuildEdit")));
 
                     Request req = requests[outp - 1];
                     Member mem = new Member()
@@ -109,13 +124,13 @@ namespace Hackbot.Scenes
                         Id = req.From,
                         Name = req.Name,
                         Description = req.Description,
-                        Role = req.RequestingRole
+                        Role = req.Role
                     };
 
                     if (!await reqs.ValidateRequestAsync(req.From, req.To))
                     {
                         ToStage(1);
-                        return Respond($"Заявка больше недействительна. Возможно пользователя уже приняли в другую команду.\n{PrintRequests(requests)}",
+                        return Respond($"{OtherSymbols.Exclamation} Заявка больше недействительна. Возможно пользователя уже приняли в другую команду.\n{await PrintRequests(requests)}",
                                        GenerateKeyboard(keyboardMarkup));
                     }
 
@@ -124,14 +139,14 @@ namespace Hackbot.Scenes
                     await guilds.AddMemberToGuildAsync(currentGuild, mem);      // Обнулим все остальные заявки от этого участника
                     requests.Remove(req);
 
-                    await notify.NotifyAsync(req.From, $"Вы были приняты в команду {currentGuild.Name}!");
+                    await notify.NotifyAsync(req.From, $"{OtherSymbols.WhiteHeavyCheckMark} Вы были приняты в команду {currentGuild.Name}!");
                     await controllerNotifyer.RemoveUserDialogAsync(req.From);
 
                     if (requests.Count == 0)
                         return NextScene(SceneTable.CaptainGuildEditScene, currentGuild);
 
                     ToStage(1);
-                    return Respond($"Заявка принята.\n\n{PrintRequests(requests)}", 
+                    return Respond($"{OtherSymbols.WhiteHeavyCheckMark} Заявка принята.\n\n{await PrintRequests(requests)}", 
                                    GenerateKeyboard(keyboardMarkup));
 
                 // ОТКЛОНЕНИЕ ЗАЯВКИ
@@ -139,34 +154,34 @@ namespace Hackbot.Scenes
                 case 3:
                     int outpp = -1;
                     if (!(int.TryParse(ans.InlineData, out outpp) && outpp <= currentGuild.Members.Count && outpp > 0))
-                        return Respond("Ответ не распознан. Повторите выбор заявки.",
-                                       GenerateKeyboard(GetNumericMarkup(currentGuild.Members.Count)));
+                        return Respond($"{OtherSymbols.Question}  Ответ не распознан. Повторите выбор заявки.",
+                                       GenerateKeyboard(GetNumericMarkup(currentGuild.Members.Count, "toGuildEdit")));
 
                     Request reqq = requests[outpp - 1];
 
                     if (!await reqs.ValidateRequestAsync(reqq.From, reqq.To))
                     {
                         ToStage(1);
-                        return Respond("Заявка больше недействительна. Возможно пользователя уже приняли в другую команду.",
+                        return Respond($"{OtherSymbols.Exclamation} Заявка больше недействительна. Возможно пользователя уже приняли в другую команду.",
                                        GenerateKeyboard(keyboardMarkup));
                     }
 
                     await reqs.RevokeRequestAsync(reqq.From, reqq.To);
                     requests.Remove(reqq);
 
-                    await notify.NotifyAsync(reqq.From, $"Ваша заявка была отклонена командиром команды {currentGuild.Name}.");
+                    await notify.NotifyAsync(reqq.From, $"{OtherSymbols.CrossMark} Ваша заявка была отклонена командиром команды {currentGuild.Name}.");
 
                     if (requests.Count == 0)
                         return NextScene(SceneTable.CaptainGuildEditScene, currentGuild);
 
                     ToStage(1);
-                    return Respond($"Заявка отклонена.\n\n{PrintRequests(requests)}",
+                    return Respond($"{OtherSymbols.CrossMark} Заявка отклонена.\n\n{await PrintRequests(requests)}",
                                    GenerateKeyboard(keyboardMarkup));
 
 
                 default:
                     Logger.Debug($"Unrecognized stage. chatid: {ans.Chat.Id}");
-                    return MainMenu("Ответ не распознан. Возврат к главному меню.");
+                    return MainMenu($"{OtherSymbols.Question} Ответ не распознан. Возврат к главному меню.");
             }
         }
 
