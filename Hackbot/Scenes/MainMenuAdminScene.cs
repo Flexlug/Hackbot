@@ -13,6 +13,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Types;
 using NLog;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace Hackbot.Scenes
 {
@@ -32,6 +33,7 @@ namespace Hackbot.Scenes
         IAdminCredentialsService credentials;
 
         IGuildsService guilds;
+        IDocumentSenderService sender;
 
         private string[] keyboardMarkup = new string[] { "CSV", "csv",
                                                          "Меню", "mainmenu" };
@@ -40,6 +42,7 @@ namespace Hackbot.Scenes
         {
             credentials = AdminCredentialsService.GetInstance();
             guilds = GuildsService.GetInstance();
+            sender = DocumentSenderService.GetInstance();
 
             Logger = LogManager.GetCurrentClassLogger();
         }
@@ -78,14 +81,35 @@ namespace Hackbot.Scenes
                         case "csv":
                             List<Guild> guildList = await guilds.GetAllGuildsAsync();
 
-                            // ИМЯ, РЕЗЮМЕ, РОЛЬ, TG_ID, КОМАНДА, КАПИТАН(да/нет)
-                            StringBuilder sw = new StringBuilder();
-                            sw.Append("csv format: ИМЯ, РЕЗЮМЕ, РОЛЬ, TG_ID, КОМАНДА, КАПИТАН(да/нет)\n");
-                            foreach (Guild g in guildList)
-                                foreach (Member mem in g.Members)
-                                    sw.AppendLine($"{mem.Name}|{mem.Description}|{mem.Role}|{mem.Id}|{g.Name}|{(mem.Id == g.CaptainId ? "true" : "false")}");
+                            try
+                            {
+                                // ИМЯ, РЕЗЮМЕ, РОЛЬ, TG_ID, КОМАНДА, КАПИТАН(да/нет)
+                                using (MemoryStream ms = new MemoryStream())
+                                {
+                                    using (StreamWriter sw = new StreamWriter(ms, Encoding.UTF8))
+                                    {
+                                        sw.WriteLine("name|description|role|TG_ID|team|is_captain");
 
-                            return Respond(sw.ToString(),
+                                        foreach (Guild g in guildList)
+                                            foreach (Member mem in g.Members)
+                                                sw.WriteLine($"{mem.Name}|{mem.Description}|{mem.Role}|{mem.Id}|{g.Name}|{(mem.Id == g.CaptainId ? "true" : "false")}");
+
+                                        sw.Flush();
+                                        ms.Seek(0, SeekOrigin.Begin);
+
+                                        using (StreamReader sr = new StreamReader(ms, Encoding.UTF8, true))
+                                        {
+                                            sender.SendDocument(ans.From.Id, sr.BaseStream, $"{DateTime.Now.ToShortDateString()}-{DateTime.Now.Ticks}.csv");
+                                        }
+                                    }
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                logger.Error($"Couldn't construct file. {e}");
+                            }
+
+                            return Respond("File construction complete",
                                            GenerateKeyboard(keyboardMarkup));
 
                         default:

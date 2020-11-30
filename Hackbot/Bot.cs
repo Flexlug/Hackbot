@@ -73,6 +73,7 @@ namespace Hackbot
             // Инициализация сервисов, требущих ссылку на клиент бота
             UserGetterService.Initialize(botClient);
             NotifyService.Initialize(botClient);
+            DocumentSenderService.Initialize(botClient);
 
             botClient.OnMessage += BotClient_OnMessage;
             botClient.OnCallbackQuery += BotClient_OnCallbackQuery;
