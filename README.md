@@ -10,5 +10,6 @@ https://miigaik.ru/about/news/3372/?sphrase_id=317271
 Далее участнику даётся выбор команды, которым не хватает участников. Участник может подать заявку в любую понравившуюся.
 Если капитан команды одобрит заявку - участнику станут видны контактные данные, по которым он сможет связаться с командой.
 
+![scr1](https://github.com/Flexlug/Hackbot/raw/master/scr1.png)
 
-![Docker](https://github.com/Flexlug/Hackbot/workflows/Docker/badge.svg)
+![scr2](https://github.com/Flexlug/Hackbot/raw/master/scr2.png)
